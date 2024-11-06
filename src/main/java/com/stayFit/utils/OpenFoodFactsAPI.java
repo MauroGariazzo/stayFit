@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import com.stayFit.models.Product;
 
 import javafx.scene.image.Image;

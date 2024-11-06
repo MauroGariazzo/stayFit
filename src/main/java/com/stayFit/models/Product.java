@@ -142,4 +142,9 @@ public class Product {
 	public Image getProductImage() {
 		return productImage;
 	}
+	
+	@Override
+	public String toString() {
+		return this.productName;
+	}
 }

@@ -1,5 +1,7 @@
 package com.stayFit.views;
 
+import java.time.LocalDate;
+
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -11,34 +13,37 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
 
 public class MainForm extends Application {
 
     private BorderPane root;    
+    private ScrollPane scrollPane; // Aggiunto ScrollPane come variabile di istanza
 
     @Override
     public void start(Stage primaryStage) {
-    	primaryStage.setTitle("Stay Fit");
+        primaryStage.setTitle("Stay Fit");
 
         // Configura la sidebar e il layout principale
         VBox sidebar = new VBox(20);
         sidebar.setPadding(new Insets(30));
         sidebar.setStyle("-fx-background-color: #b22222;");
-        
+
         Label appTitle = new Label("Food App");
         appTitle.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
-        
+
         Label exitButton = createSidebarButtonWithImage("Exit", "/icons/exit.png");
         exitButton.setOnMouseClicked(e -> primaryStage.close());
-        
+
+        LocalDate dateTest = LocalDate.of(2024, 10, 25);
         Label foodsButton = createSidebarButtonWithImage("Foods", "/icons/report.png");
         foodsButton.setOnMouseClicked(e -> {
-            VBox content = new DailyReport(2000,150,200,300).getDailyReportView();
-            root.setCenter(content);
+            StackPane content = new DailyReport(2000, 150, 200, 300, dateTest).getDailyReportView();
+            scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane
         });
+
 
         Label drinksButton = createSidebarButtonWithImage("Drinks", "/icons/yourData.png");
         drinksButton.setOnMouseClicked(e -> showDrinksContent());
@@ -58,15 +63,16 @@ public class MainForm extends Application {
         root = new BorderPane();
         root.setLeft(sidebar);
 
+        // Incapsula solo l'area centrale in uno ScrollPane
+        scrollPane = new ScrollPane();
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(true);
+        root.setCenter(scrollPane); // Imposta lo ScrollPane come contenuto centrale
+
         // Mostra un contenuto predefinito all'avvio
         showWelcomeContent();
 
-        // Incapsula BorderPane in uno ScrollPane
-        ScrollPane scrollPane = new ScrollPane(root);
-        scrollPane.setFitToWidth(true);  // Adatta lo scrollbar orizzontale alla larghezza
-        scrollPane.setFitToHeight(true); // Adatta lo scrollbar verticale all'altezza
-
-        Scene scene = new Scene(scrollPane);  // Imposta ScrollPane come nodo principale della scena
+        Scene scene = new Scene(root);  // Usa root come nodo principale della scena
         primaryStage.setMaximized(true);
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -111,7 +117,7 @@ public class MainForm extends Application {
         drinkType.getItems().addAll("Soft Drink", "Juice", "Alcoholic");
 
         content.getChildren().addAll(title, drinkName, drinkType);
-        root.setCenter(content);
+        scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane
     }
 
     // Metodo per mostrare il contenuto della sezione "Desserts"
@@ -125,7 +131,7 @@ public class MainForm extends Application {
         dessertName.setPromptText("Enter dessert name");
 
         content.getChildren().addAll(title, dessertName);
-        root.setCenter(content);
+        scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane
     }
 
     // Metodo per mostrare il contenuto della sezione "MyCart"
@@ -138,7 +144,7 @@ public class MainForm extends Application {
         Label cartDetails = new Label("Your cart is currently empty.");
 
         content.getChildren().addAll(title, cartDetails);
-        root.setCenter(content);
+        scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane
     }
 
     // Metodo per mostrare il contenuto della sezione "About"
@@ -151,7 +157,7 @@ public class MainForm extends Application {
         Label aboutDetails = new Label("This is a sample application created with JavaFX.");
 
         content.getChildren().addAll(title, aboutDetails);
-        root.setCenter(content);
+        scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane
     }
 
     // Metodo per mostrare un contenuto di benvenuto predefinito
@@ -164,7 +170,7 @@ public class MainForm extends Application {
         Label message = new Label("Select a category from the left to get started.");
 
         content.getChildren().addAll(title, message);
-        root.setCenter(content);
+        scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane
     }
 
     public static void main(String[] args) {

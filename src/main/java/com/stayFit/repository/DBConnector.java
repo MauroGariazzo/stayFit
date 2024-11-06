@@ -14,7 +14,7 @@ public class DBConnector {
 		this.password = password;
 	}
 
-	private Connection getConnection() throws SQLException {
+	public Connection getConnection() throws SQLException {
 		try {
 			return DriverManager.getConnection(url, username, password);
 		} 
@@ -40,6 +40,7 @@ public class DBConnector {
 			throw new SQLException(ex.getMessage());
 		}
 	}
+	
 	
 	public ResultSet getResultSetObj(String query) throws SQLException{
 		try {
