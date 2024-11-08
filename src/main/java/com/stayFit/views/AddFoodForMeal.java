@@ -1,23 +1,41 @@
 package com.stayFit.views;
 
+import java.util.ArrayList;
+import java.util.List;
 
-import com.stayFit.models.Product;
+import com.stayFit.portion.PortionCreateRequestDTO;
+import com.stayFit.product.ProductController;
+import com.stayFit.product.ProductCreateRequestDTO;
+import com.stayFit.product.ProductDAO;
+import com.stayFit.product.ProductGetRequestDTO;
+import com.stayFit.product.ProductGetResponseDTO;
 import com.stayFit.utils.OpenFoodFactsAPI;
+import com.stayFit.utils.PortionListener;
+
+import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.util.Callback;
+import javafx.util.Duration;
 
+import com.stayFit.product.ProductCreateUseCase;
+import com.stayFit.product.ProductGetUseCase;
+import com.stayFit.repository.DBConnector;
 
 public class AddFoodForMeal {
 
@@ -27,148 +45,21 @@ public class AddFoodForMeal {
 	private final int MAX_CARBS;*/
 	private VBox overlayPane;
 	private StackPane mainContent;
-
-	private ProgressBar caloriesProgressBar;
-	private Label caloriesLabel;
-
-	private ProgressBar proteinProgressBar;
-	private Label proteinLabel;
-	private ProgressBar fatProgressBar;
-	private Label fatLabel;
-	private ProgressBar carbProgressBar;
-	private Label carbLabel;
-	private ListView<Product> foodListView;
+	private ListView<ProductGetResponseDTO> foodListView;
 	private String mealType;
+	private double grammage;
+	public List<PortionCreateRequestDTO>portions;
+	private PortionListener listener;
+	private Runnable updateDailyReport;
 	
-	public AddFoodForMeal(String mealType) {
+	public AddFoodForMeal(String mealType, PortionListener listener, Runnable updateDailyReport) {
 		this.mealType = mealType;
+		this.grammage = 0;
+		this.portions = new ArrayList<>();
+		this.listener = listener;
+		this.updateDailyReport = updateDailyReport;
 	}
-	/*private int totalCalories = 0;
-	private int totalProteins = 0;
-	private int totalFats = 0;
-	private int totalCarbs = 0;
-
-	private ListView<Product> foodListView; // Modificato per usare Product*/
-
-	/*public AddFoodForMeal(final int MAX_CALORIES, final int MAX_PROTEINS, final int MAX_FATS, final int MAX_CARBS) {
-		this.MAX_CALORIES = MAX_CALORIES;
-		this.MAX_PROTEINS = MAX_PROTEINS;
-		this.MAX_FATS = MAX_FATS;
-		this.MAX_CARBS = MAX_CARBS;
-	}*/
-
 	
-	/*private VBox createCaloriesOverview() {
-		// Titolo della sezione
-		Label title = new Label("Panoramica Nutrizionale");
-		title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
-
-		// Barra delle calorie
-		caloriesProgressBar = new ProgressBar(0);
-		caloriesProgressBar.setPrefWidth(300);
-		caloriesProgressBar.setStyle("-fx-accent: #76ff03;"); // Colore iniziale verde
-
-		// Etichetta calorie
-		caloriesLabel = new Label("Calorie Assunte: 0 / " + MAX_CALORIES);
-		caloriesLabel.setStyle("-fx-font-size: 14px;");
-
-		// Barra delle proteine
-		proteinProgressBar = new ProgressBar(0);
-		proteinProgressBar.setPrefWidth(100);
-		proteinProgressBar.setStyle("-fx-accent: #2196F3;"); // Blu
-
-		// Etichetta proteine
-		proteinLabel = new Label("Proteine: 0g / " + MAX_PROTEINS + "g");
-		proteinLabel.setStyle("-fx-font-size: 12px;");
-
-		// Barra dei grassi
-		fatProgressBar = new ProgressBar(0);
-		fatProgressBar.setPrefWidth(100);
-		fatProgressBar.setStyle("-fx-accent: #FFC107;"); // Giallo
-
-		// Etichetta grassi
-		fatLabel = new Label("Grassi: 0g / " + MAX_FATS + "g");
-		fatLabel.setStyle("-fx-font-size: 12px;");
-
-		// Barra dei carboidrati
-		carbProgressBar = new ProgressBar(0);
-		carbProgressBar.setPrefWidth(100);
-		carbProgressBar.setStyle("-fx-accent: #FF5722;"); // Arancione
-
-		// Etichetta carboidrati
-		carbLabel = new Label("Carboidrati: 0g / " + MAX_CARBS + "g");
-		carbLabel.setStyle("-fx-font-size: 12px;");
-
-		// Layout per le barre nutrizionali
-		VBox calorieBox = new VBox(10);
-		calorieBox.setAlignment(Pos.CENTER);
-		calorieBox.getChildren().addAll(title, caloriesProgressBar, caloriesLabel);
-
-		// Layout per le barre proteine, grassi e carboidrati
-		HBox macrosBox = new HBox(20);
-		macrosBox.setAlignment(Pos.CENTER);
-		macrosBox.getChildren().addAll(createMacroProgressBox("Proteine", proteinProgressBar, proteinLabel),
-				createMacroProgressBox("Grassi", fatProgressBar, fatLabel),
-				createMacroProgressBox("Carboidrati", carbProgressBar, carbLabel));
-
-		calorieBox.getChildren().add(macrosBox);
-
-		// Stile per calorieBox
-		calorieBox.setStyle("-fx-padding: 10; -fx-border-color: #cccccc; -fx-border-radius: 10; "
-				+ "-fx-background-radius: 10; -fx-background-color: #f9f9f9;");
-
-		return calorieBox;
-	}*/
-
-
-	/*private VBox createMacroProgressBox(String name, ProgressBar progressBar, Label label) {
-		Label macroNameLabel = new Label(name);
-		macroNameLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-
-		VBox macroBox = new VBox(5);
-		macroBox.setAlignment(Pos.CENTER);
-		macroBox.getChildren().addAll(macroNameLabel, progressBar, label);
-
-		return macroBox;
-	}*/
-	
-	/*private HBox createMealItem(String mealName, String calories, String details, String path) {
-	    HBox mealItem = new HBox(10);
-	    mealItem.setPadding(new Insets(10));
-	    mealItem.setAlignment(Pos.BASELINE_LEFT);
-	    mealItem.setStyle("-fx-background-color: #FFFFFF; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 5;");
-	    mealItem.setMaxWidth(500);
-
-	    // Icona pasto
-	    Image icon = new Image(path);
-	    ImageView iconView = new ImageView(icon);
-	    iconView.setFitWidth(40);
-	    iconView.setFitHeight(40);
-
-	    // Contenitore testo (Nome pasto e calorie)
-	    VBox textContainer = new VBox(5);
-	    Label mealLabel = new Label(mealName);
-	    mealLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
-	    Label caloriesLabel = new Label(calories);
-	    caloriesLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #666666;");
-	    Label detailsLabel = new Label(details);
-	    detailsLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #888888;");
-	    textContainer.getChildren().addAll(mealLabel, caloriesLabel, detailsLabel);
-
-	    // Spaziatore per spingere il pulsante a destra
-	    Region spacer = new Region();
-	    HBox.setHgrow(spacer, Priority.ALWAYS);
-
-	    // Pulsante "+"
-	    Button addButton = new Button("+");
-	    addButton.setStyle("-fx-font-size: 16px; -fx-text-fill: #FFFFFF; -fx-background-color: #007bff; -fx-background-radius: 20;");
-	    addButton.setMinSize(30, 30);
-	    //addButton.setOnAction(event -> openForm());
-	    // Aggiungere elementi all'HBox
-	    mealItem.getChildren().addAll(iconView, textContainer, spacer, addButton);
-	    return mealItem;
-	}*/
-
 
 	public VBox searchFoodForm() {
 	    // Titolo "Foods Section"
@@ -204,12 +95,13 @@ public class AddFoodForMeal {
 	    searchButtonBox.setAlignment(Pos.CENTER_RIGHT);
 
 	    // Crea due nuovi pulsanti sotto la ListView
-	    Button addProductButton = new Button("Aggiungi");	    
+	    //Button addProductButton = new Button("Aggiungi");	    
 	    Button exitButton = new Button("Esci");
 	    exitButton.setOnAction(e -> closeForm());
 
 	    // Layout per i pulsanti
-	    HBox buttonBox = new HBox(10, addProductButton, exitButton);
+	    //HBox buttonBox = new HBox(10, addProductButton, exitButton);
+	    HBox buttonBox = new HBox(10, exitButton);
 	    buttonBox.setAlignment(Pos.CENTER);
 	    buttonBox.setPadding(new Insets(10, 0, 0, 0)); // Aggiungi padding per distanziarli dalla ListView
 
@@ -224,13 +116,14 @@ public class AddFoodForMeal {
 	    return formBox;
 	}
 	
-	// All'interno della tua classe
-	private Callback<ListView<Product>, ListCell<Product>> createCellFactory() {
-	    return new Callback<ListView<Product>, ListCell<Product>>() {
+
+	private Callback<ListView<ProductGetResponseDTO>, ListCell<ProductGetResponseDTO>> createCellFactory() {
+	    return new Callback<ListView<ProductGetResponseDTO>, ListCell<ProductGetResponseDTO>>() {
 	        @Override
-	        public ListCell<Product> call(ListView<Product> listView) {
-	            return new ListCell<Product>() {
+	        public ListCell<ProductGetResponseDTO> call(ListView<ProductGetResponseDTO> listView) {
+	            return new ListCell<ProductGetResponseDTO>() {
 	                private HBox content;
+	                private int id;
 	                private ImageView imageView;
 	                private VBox detailsBox;
 	                private Label nameLabel;
@@ -242,7 +135,9 @@ public class AddFoodForMeal {
 	                private Label carbsLabel;
 	                private Label sugarsLabel;
 	                private Label saltLabel;
-
+	                private Button addButton;
+	                private Region spacer;
+	                
 	                {
 	                    imageView = new ImageView();
 	                    imageView.setFitWidth(50);
@@ -262,37 +157,64 @@ public class AddFoodForMeal {
 	                    sugarsLabel = new Label();
 	                    saltLabel = new Label();
 
+	                    
 	                    detailsBox = new VBox(2);
 	                    detailsBox.getChildren().addAll(nameLabel, brandLabel, categoryLabel, caloriesLabel,
 	                            proteinsLabel, fatsLabel, carbsLabel, sugarsLabel, saltLabel);
 
-	                    content = new HBox(10, imageView, detailsBox);
+	                    addButton = new Button("+");
+	                    
+	                    addButton.setOnAction(event -> {
+	                    	grammage = new GrammageModal().openGrammageModal();
+	                    	createPortion();
+	                    });
+
+
+	                    spacer = new Region();
+	                    HBox.setHgrow(spacer, Priority.ALWAYS);
+
+	                    content = new HBox(10, imageView, detailsBox, spacer, addButton);
 	                    content.setAlignment(Pos.CENTER_LEFT);
 	                }
 
 	                @Override
-	                protected void updateItem(Product item, boolean empty) {
+	                protected void updateItem(ProductGetResponseDTO item, boolean empty) {
 	                    super.updateItem(item, empty);
 	                    if (item != null && !empty) {
-	                        if (item.getProductImage() != null) {
-	                            imageView.setImage(item.getProductImage());
-	                        } else {
+	                        if (item.productImage != null) {
+	                            imageView.setImage(item.productImage);
+	                        } 
+	                        else {
+	                        	System.out.println("beccato");
 	                            imageView.setImage(null);
 	                        }
-	                        nameLabel.setText("Nome: " + item.getProductName());
-	                        brandLabel.setText("Marca: " + item.getBrand());
-	                        categoryLabel.setText("Categoria: " + item.getCategory());
-	                        caloriesLabel.setText(String.format("Energia (kcal): %.1f kcal", item.getCalories()));
-	                        proteinsLabel.setText(String.format("Proteine: %.1f g", item.getProteins()));
-	                        fatsLabel.setText(String.format("Grassi: %.1f g", item.getFats()));
-	                        carbsLabel.setText(String.format("Carboidrati: %.1f g", item.getCarbs()));
-	                        sugarsLabel.setText(String.format("Zuccheri: %.1f g", item.getSugars()));
-	                        saltLabel.setText(String.format("Sale: %.1f g", item.getSalt()));
+	                        //System.out.println(item.productName);
+	                        id = item.id;
+	                        nameLabel.setText("Nome: " + item.productName);
+	                        brandLabel.setText("Marca: " + item.brand);
+	                        categoryLabel.setText("Categoria: " + item.category);
+	                        caloriesLabel.setText(String.format("Energia (kcal): %.1f kcal", item.calories));
+	                        proteinsLabel.setText(String.format("Proteine: %.1f g", item.proteins));
+	                        fatsLabel.setText(String.format("Grassi: %.1f g", item.fats));
+	                        carbsLabel.setText(String.format("Carboidrati: %.1f g", item.carbs));
+	                        sugarsLabel.setText(String.format("Zuccheri: %.1f g", item.sugars));
+	                        saltLabel.setText(String.format("Sale: %.1f g", item.salt));
 	                        setGraphic(content);
 	                    } 
 	                    else {
 	                        setGraphic(null);
 	                    }
+	                }
+
+	                
+
+	                // Metodo per mostrare un messaggio di errore
+	                private void showError(String message) {
+	                    Alert alert = new Alert(Alert.AlertType.ERROR);
+	                    alert.setTitle("Errore");
+	                    alert.setHeaderText(null);
+	                    alert.setContentText(message);
+	                    alert.showAndWait();
 	                }
 	            };
 	        }
@@ -305,21 +227,85 @@ public class AddFoodForMeal {
         this.mainContent = mainContent;
     }
 
-    // Method to close the overlay
-    public void closeForm() {
-        mainContent.getChildren().remove(overlayPane);
-    }
+	public void closeForm() {
+	    if (listener != null && !portions.isEmpty()) {
+	        listener.onPortionsAdded(mealType, portions);
+	    }
+	    mainContent.getChildren().remove(overlayPane);
+	    updateDailyReport.run();
+	}
+
     
     private void populateTableView(String name) {
     	foodListView.getItems().clear();
     	try {
-            for (Product product : OpenFoodFactsAPI.search(name)) {                
-                foodListView.getItems().add(product);
-            }
+    		//cerca i prodotti dal db
+    		//se la lista è uguale a 0, 
+    		//fai la ricerca dall'api
+    		ProductController controller = new ProductController(    				 
+    				 new ProductCreateUseCase(new ProductDAO(new DBConnector())),
+    				 new ProductGetUseCase(new ProductDAO(new DBConnector())));
+    		
+    		ProductGetRequestDTO productDTO = new ProductGetRequestDTO(); 
+    		productDTO.productName = name;
+    		productDTO.brand = name;
+    		productDTO.category = name;
+    		List<ProductGetResponseDTO>products = controller.get(productDTO);
+    		
+    		if(products.size()>0) {
+    			populateFromDB(products);
+    		}
+    		
+    		else {
+    			populateFromAPI(name, controller, products);                 
+    		}
+            
         } 
     	catch (Exception ex) {
     		showError(ex.getMessage());
+    		ex.printStackTrace();
         }
+    }
+    
+    private void populateFromDB(List<ProductGetResponseDTO>products) {
+    	for (ProductGetResponseDTO product : products) {    				
+            foodListView.getItems().add(product);
+        }
+    }
+    
+    private void populateFromAPI(String name, ProductController controller, List<ProductGetResponseDTO>products) throws Exception{    	
+    	for (ProductGetResponseDTO product : OpenFoodFactsAPI.search(name)) {
+			ProductCreateRequestDTO pcrDTO = new ProductCreateRequestDTO();
+			
+			pcrDTO.productName = product.productName;
+			pcrDTO.brand = product.brand;
+			pcrDTO.category = product.category;
+			pcrDTO.productImage = product.productImage;			
+			pcrDTO.calories = product.calories;
+			pcrDTO.carbs = product.carbs;
+			pcrDTO.fats = product.fats;
+			pcrDTO.sugars = product.sugars;
+			pcrDTO.salt = product.salt;
+			pcrDTO.proteins = product.proteins;
+			controller.create(pcrDTO); //inserisci il prodotto nel db
+			products.add(product);			
+    	}
+    	
+    	ProductGetRequestDTO productDTO = new ProductGetRequestDTO(); 
+		productDTO.productName = name;
+		productDTO.brand = name;
+		productDTO.category = name;
+		products = controller.get(productDTO);
+		populateFromDB(products);
+    }
+    
+    private void createPortion() {
+    	PortionCreateRequestDTO pcrd = new PortionCreateRequestDTO();
+    	pcrd.grams = grammage;
+    	ProductGetResponseDTO product = foodListView.getSelectionModel().selectedItemProperty().get();
+    	System.out.println(product.id);
+    	pcrd.product_fk = product.id;
+    	portions.add(pcrd);    	    	
     }
     
     private void showError(String message) {
@@ -328,90 +314,5 @@ public class AddFoodForMeal {
 		alert.setHeaderText(null);
 		alert.setContentText(message);
 		alert.showAndWait();
-	}
-
-	/*public void updateCalories(int additionalCalories) {
-		totalCalories += additionalCalories;
-		caloriesLabel.setText("Calorie Assunte: " + totalCalories + " / " + MAX_CALORIES);
-
-		// Calcolare il progresso
-		double progress = (double) totalCalories / MAX_CALORIES;
-		caloriesProgressBar.setProgress(progress > 1.0 ? 1.0 : progress);
-
-		// Al di fuori del limite stabilito
-		if (totalCalories > MAX_CALORIES) {
-			caloriesProgressBar.setStyle("-fx-accent: red;");
-		} else {
-			caloriesProgressBar.setStyle("-fx-accent: #76ff03;"); // Verde
-		}
-	}
-
-
-	public void updateProteins(int additionalProteins) {
-		// Aggiornare il totale delle proteine
-		totalProteins += additionalProteins;
-
-		// Aggiornare l'etichetta
-		proteinLabel.setText("Proteine: " + totalProteins + "g / " + MAX_PROTEINS + "g");
-
-		// Calcolare il progresso
-		double progress = (double) totalProteins / MAX_PROTEINS;
-		proteinProgressBar.setProgress(progress > 1.0 ? 1.0 : progress);
-
-		// Cambiare il colore della ProgressBar in base al superamento del limite
-		if (totalProteins > MAX_PROTEINS) {
-			proteinProgressBar.setStyle("-fx-accent: red;");
-		} else {
-			proteinProgressBar.setStyle("-fx-accent: #2196F3;"); // Blu
-		}
-	}
-
-
-	public void updateFats(int additionalFats) {
-		// Aggiornare il totale dei grassi
-		totalFats += additionalFats;
-
-		// Aggiornare l'etichetta
-		fatLabel.setText("Grassi: " + totalFats + "g / " + MAX_FATS + "g");
-
-		// Calcolare il progresso
-		double progress = (double) totalFats / MAX_FATS;
-		fatProgressBar.setProgress(progress > 1.0 ? 1.0 : progress);
-
-		// Cambiare il colore della ProgressBar in base al superamento del limite
-		if (totalFats > MAX_FATS) {
-			fatProgressBar.setStyle("-fx-accent: red;");
-		} else {
-			fatProgressBar.setStyle("-fx-accent: #FFC107;"); // Giallo
-		}
-	}
-
-
-	public void updateCarbs(int additionalCarbs) {
-		// Aggiornare il totale dei carboidrati
-		totalCarbs += additionalCarbs;
-
-		// Aggiornare l'etichetta
-		carbLabel.setText("Carboidrati: " + totalCarbs + "g / " + MAX_CARBS + "g");
-
-		// Calcolare il progresso
-		double progress = (double) totalCarbs / MAX_CARBS;
-		carbProgressBar.setProgress(progress > 1.0 ? 1.0 : progress);
-
-		// Cambiare il colore della ProgressBar in base al superamento del limite
-		if (totalCarbs > MAX_CARBS) {
-			carbProgressBar.setStyle("-fx-accent: red;");
-		} else {
-			carbProgressBar.setStyle("-fx-accent: #FF5722;"); // Arancione
-		}
-	}
-
-
-	private void showError(String message) {
-		Alert alert = new Alert(Alert.AlertType.ERROR);
-		alert.setTitle("Errore");
-		alert.setHeaderText(null);
-		alert.setContentText(message);
-		alert.showAndWait();
-	}*/
+	}        
 }

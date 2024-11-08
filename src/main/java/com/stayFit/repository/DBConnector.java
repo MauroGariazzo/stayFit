@@ -3,16 +3,16 @@ package com.stayFit.repository;
 import java.sql.*;
 
 public class DBConnector {
+		
+	private final String url = "jdbc:mysql://localhost:3306/stayfit";
+	private final String username = "root";
+	private final String password = "Bitcamp_0";
 	
-	private String url;
-	private String username;
-	private String password;
-	
-	public DBConnector(String url, String username, String password) {
+	/*public DBConnector(String url, String username, String password) {
 		this.url = url;
 		this.username = username;
 		this.password = password;
-	}
+	}*/
 
 	public Connection getConnection() throws SQLException {
 		try {

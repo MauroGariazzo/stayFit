@@ -4,21 +4,56 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
-import com.stayFit.models.Product;
 
+import com.stayFit.models.Product;
+import com.stayFit.product.ProductDAO;
+import com.stayFit.product.ProductGetResponseDTO;
+import com.stayFit.product.ProductCreateRequestDTO;
+import com.stayFit.registration.RegistrationDAO;
+import com.stayFit.repository.DBConnector;
+
+import javafx.application.Platform;
 import javafx.scene.image.Image;
 
 public class OpenFoodFactsAPI {
 
-    public static List<Product> search(String name) throws Exception {
-        // URL per la ricerca del prodotto
-        URL url = new URL("https://world.openfoodfacts.org/cgi/search.pl?search_terms=" + name + "&search_simple=1&json=1&page_size=20");
+    // Classe interna per gestire lo stato di inizializzazione di JavaFX
+    private static class JavaFXInitializer {
+        static AtomicBoolean initialized = new AtomicBoolean(false);
+    }
 
-        System.out.println("URL generato: " + url); // Stampa l'URL per debugging
+    private static void initializeJavaFX() {
+        // Verifica se JavaFX è già stato inizializzato
+        if (!JavaFXInitializer.initialized.get()) {
+            final CountDownLatch latch = new CountDownLatch(1);
+            Platform.startup(() -> {
+                // Callback vuota, l'inizializzazione è completata
+                latch.countDown();
+            });
+            try {
+                latch.await(); // Attende che JavaFX sia inizializzato
+                JavaFXInitializer.initialized.set(true);
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Errore durante l'inizializzazione di JavaFX", e);
+            }
+        }
+    }
+
+    public static List<ProductGetResponseDTO> search(String name) throws Exception {
+        //initializeJavaFX(); // Inizializza JavaFX
+
+        // URL per la ricerca del prodotto, assicurati di codificare il nome
+        String encodedName = URLEncoder.encode(name, "UTF-8");
+        URL url = new URL("https://world.openfoodfacts.org/cgi/search.pl?search_terms=" + 
+            encodedName + "&search_simple=1&json=1&page_size=50");
 
         // Apertura della connessione
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -44,9 +79,6 @@ public class OpenFoodFactsAPI {
         }
         in.close();
 
-        // Debug: stampa la risposta JSON ricevuta
-        System.out.println("Risposta JSON: " + content.toString());
-
         // Parsing della risposta JSON
         JSONObject jsonResponse = new JSONObject(content.toString());
         JSONArray productsArray = jsonResponse.optJSONArray("products");
@@ -56,7 +88,7 @@ public class OpenFoodFactsAPI {
         }
 
         // Creazione della lista di prodotti
-        List<Product> productList = new ArrayList<>();
+        List<ProductGetResponseDTO> productList = new ArrayList<>();
 
         // Iterazione su ogni elemento dell'array di prodotti
         for (int i = 0; i < productsArray.length(); i++) {
@@ -74,25 +106,87 @@ public class OpenFoodFactsAPI {
             double sugars = nutriments != null ? nutriments.optDouble("sugars_100g", 0) : 0;
             double salt = nutriments != null ? nutriments.optDouble("salt_100g", 0) : 0;
             
-            Product product = new Product(
-                productData.optString("product_name", "Nome non disponibile"),
-                productData.optString("brands", "Marca non disponibile"),
-                productData.optString("categories", "Categoria non disponibile"),
-                calories,
-                proteins,
-                fats,
-                carbs,
-                sugars,
-                salt,
-                imageUrl != null ? new Image(imageUrl) : new Image("icons/question.png")
-            );
+            ProductGetResponseDTO product = new ProductGetResponseDTO();
+            product.productName = productData.optString("product_name", "Nome non disponibile");
+            if(product.productName.length() > 50) {
+            	product.productName = product.productName.substring(0,50);
+            }
+            product.brand = productData.optString("brands", "Marca non disponibile");
+            if(product.brand.length() > 60) {
+            	product.brand = product.brand.substring(0,60);
+            }
+            /*product.category = productData.optString("categories", "Categoria non disponibile");
+            if(product.category.length() > 50) {
+            	product.category = product.category.substring(0,50);
+            }*/
+            product.category = name;
+            product.calories = calories;
+            product.proteins = proteins;
+            product.fats = fats;
+            product.carbs = carbs;
+            product.sugars = sugars;
+            product.salt = salt;
+            
+            if(imageUrl != null && !imageUrl.isEmpty()) {
+                try {
+                    // Carica l'immagine in modo sincrono
+                    product.productImage = new Image(imageUrl, false);
+                } 
+                catch (Exception e) {
+                    System.out.println("Errore nel caricamento dell'immagine: " + imageUrl);
+                    product.productImage = new Image("icons/question.png");
+                }
+            }
+            else {
+                product.productImage = new Image("icons/question.png");
+            }
 
             
-            //sendToDB
             productList.add(product);
         }
 
         // Restituisce la lista di prodotti
         return productList;
+    }
+    
+    public static void main(String[] args) {
+        //Inizializza JavaFX
+        initializeJavaFX();
+
+        String[] types = {
+            "pane", "pasta", "carne", "bevande", "acqua", "frutta", "verdura", "pesce", "birra", "vino"};
+        
+
+        ProductDAO pd = new ProductDAO(new DBConnector());
+        try {
+            for(String type : types) {
+            	System.out.println(type);
+                List<ProductGetResponseDTO> products = search(type);
+                Thread.sleep(6000);
+                
+                for(ProductGetResponseDTO product : products) {
+                	ProductCreateRequestDTO pc = new ProductCreateRequestDTO();
+                	pc.productName = product.productName;
+                	pc.brand = product.brand;
+                	pc.category = product.category;
+                	pc.calories = product.calories;
+                	pc.carbs = product.carbs;
+                	pc.fats = product.fats;
+                	pc.sugars = product.sugars;
+                	pc.proteins = product.proteins;
+                	pc.salt = product.salt;
+                	pc.productImage = product.productImage;
+                    pd.insert(pc);
+                }                
+            }
+        }
+        catch(Exception ex) {
+            System.out.println("Errore: " + ex.getMessage());
+            ex.printStackTrace();
+            return;
+        }
+        finally {
+        	System.out.println("Spacciau");
+        }
     }
 }

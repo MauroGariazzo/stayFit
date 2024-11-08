@@ -2,6 +2,8 @@ package com.stayFit.views;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.List;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -20,10 +22,20 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane; // Changed to StackPane
 import javafx.scene.layout.VBox;
-
+import com.stayFit.utils.PortionListener;
+import com.stayFit.enums.MealType;
+import com.stayFit.meal.MealController;
+import com.stayFit.meal.MealCreateRequestDTO;
+import com.stayFit.meal.MealCreateUseCase;
+import com.stayFit.meal.MealDAO;
 import com.stayFit.models.Product;
+import com.stayFit.portion.PortionController;
+import com.stayFit.portion.PortionCreateRequestDTO;
+import com.stayFit.portion.PortionCreateUseCase;
+import com.stayFit.portion.PortionDAO;
+import com.stayFit.repository.DBConnector;
 
-public class DailyReport {
+public class DailyReport implements PortionListener {
 
     private final int MAX_CALORIES;
     private final int MAX_PROTEINS;
@@ -32,35 +44,33 @@ public class DailyReport {
 
     private ProgressBar caloriesProgressBar;
     private Label caloriesLabel;
-
     private ProgressBar proteinProgressBar;
     private Label proteinLabel;
     private ProgressBar fatProgressBar;
     private Label fatLabel;
     private ProgressBar carbProgressBar;
     private Label carbLabel;
-
     private Button selectedDayButton;
-
     private VBox calendarBox;
     private Label monthLabel;
     private YearMonth currentYearMonth;
     private LocalDate startingDate;
-
     private Button previousButton;
     private Button nextButton;
+    
+    private MealDAO mealDAO;
+    private MealCreateUseCase mcuc;
+    private MealController mc;
+    private MealCreateRequestDTO meal;
+    
+    private PortionDAO portionDAO;
+    private PortionCreateUseCase pcuc;
+    private PortionController pc;
+    private PortionCreateRequestDTO pcrDTO;
 
     private StackPane mainContent; // Changed from VBox to StackPane
+    List<PortionCreateRequestDTO>portions;
 
-    /**
-     * Constructor of the DailyReport class.
-     *
-     * @param MAX_CALORIES  Maximum daily calories.
-     * @param MAX_PROTEINS  Maximum daily proteins.
-     * @param MAX_FATS      Maximum daily fats.
-     * @param MAX_CARBS     Maximum daily carbs.
-     * @param startingDate  Starting date for the calendar.
-     */
     public DailyReport(final int MAX_CALORIES, final int MAX_PROTEINS, final int MAX_FATS, final int MAX_CARBS, LocalDate startingDate) {
         this.MAX_CALORIES = MAX_CALORIES;
         this.MAX_PROTEINS = MAX_PROTEINS;
@@ -68,21 +78,48 @@ public class DailyReport {
         this.MAX_CARBS = MAX_CARBS;
         this.startingDate = startingDate;
         this.currentYearMonth = YearMonth.now(); // Set the current month on startup
+        this.portions = new ArrayList<>();
+        /*---------------------------------------------------------------*/
+        this.mealDAO = new MealDAO(new DBConnector());
+        this.mcuc= new MealCreateUseCase(mealDAO);
+        this.mc = new MealController(mcuc);
+        this.meal = new MealCreateRequestDTO();
+        
+        this.portionDAO = new PortionDAO(new DBConnector());
+        this.pcuc = new PortionCreateUseCase(portionDAO);
+        this.pc = new PortionController(pcuc);
+        this.pcrDTO = new PortionCreateRequestDTO();
     }
 
-    /**
-     * Gets the view of the Daily Report.
-     *
-     * @return A StackPane containing all the sections of the Daily Report.
-     */
+    @Override
+    public void onPortionsAdded(String mealType, List<PortionCreateRequestDTO> portions) {
+        
+    	if(portions.size()>0) {
+    		
+    		meal.mealType = MealType.valueOf(mealType.toUpperCase());
+    		meal.mealUpdateDate = LocalDate.now();
+    		meal.fk_user = 1; //id temporaneo
+    		try {
+    			int id = mc.create(meal);
+    			pc.create(portions, id);
+    		}
+    		catch(Exception ex) {
+    			//stampa errore
+    			System.out.println(ex.getMessage());
+    		}
+    	}
+
+        // Esempio: aggiornare la tabella delle porzioni o le barre di progresso
+        //updatePortionsTable(mealType, portions);
+        //updateNutritionalOverview(portions);
+    }
+ 
     public StackPane getDailyReportView() {
-        // Initialize the main container as a StackPane
         mainContent = new StackPane();
         mainContent.setPadding(new Insets(20, 20, 20, 20));
         mainContent.setAlignment(Pos.TOP_CENTER);
 
-        // Create a VBox to hold the top content
-        VBox topContentBox = new VBox(20); // Spacing between elements
+        VBox topContentBox = new VBox(20);
         topContentBox.setAlignment(Pos.TOP_LEFT);
 
         // Add the top sections
@@ -91,28 +128,20 @@ public class DailyReport {
             createCalendarView(),
             createCalorieOverview()
         );
-
-        // Create a VBox for meal items
-        VBox mealsBox = new VBox(20); // Spacing between meal items
+        
+        VBox mealsBox = new VBox(20);
         mealsBox.setAlignment(Pos.TOP_LEFT);
         mealsBox.getChildren().addAll(
             createMealItem("Colazione", "50 kcal", "pippo", "/icons/coffee.png", mealsBox),
             createMealItem("Pranzo", "50 kcal", "pippo", "/icons/lunch.png", mealsBox),
             createMealItem("Cena", "50 kcal", "pippo", "/icons/meat.png", mealsBox),
             createMealItem("Spuntini", "50 kcal", "pippo", "/icons/snack.png", mealsBox)
-        );
-
-        // Create the table view
+        );        
         Node tableView = createTableView();
 
-        // Create an HBox to hold the mealsBox and tableView side by side
-        HBox mainBody = new HBox(20); // Spacing between mealsBox and tableView
+        HBox mainBody = new HBox(20);
         mainBody.setAlignment(Pos.TOP_LEFT);
-
-        // Add mealsBox and tableView to mainBody
         mainBody.getChildren().addAll(mealsBox, tableView);
-
-        // Bind the prefWidthProperty to divide the space equally
         mainBody.widthProperty().addListener((obs, oldVal, newVal) -> {
             double halfWidth = newVal.doubleValue() / 2 - 10; // Subtract spacing
             mealsBox.setPrefWidth(halfWidth);
@@ -121,25 +150,14 @@ public class DailyReport {
             }
         });
 
-        // Alternatively, using bindings
-        /*
-        mealsBox.prefWidthProperty().bind(mainBody.widthProperty().multiply(0.5).subtract(10));
-        if (tableView instanceof Region) {
-            ((Region) tableView).prefWidthProperty().bind(mainBody.widthProperty().multiply(0.5).subtract(10));
-        }
-        */
-
-        // Create a VBox to hold all content
-        VBox contentBox = new VBox(20); // Spacing between topContentBox and mainBody
+        VBox contentBox = new VBox(20);
         contentBox.setAlignment(Pos.TOP_LEFT);
         contentBox.getChildren().addAll(
             topContentBox,
             mainBody
         );
-
-        // Add contentBox to mainContent        
+  
         mainContent.getChildren().add(contentBox);
-
         return mainContent;
     }
 
@@ -149,24 +167,15 @@ public class DailyReport {
         tableContainer.setAlignment(Pos.TOP_RIGHT);
         tableContainer.setStyle("-fx-background-color: #FFFFFF; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 5;");
 
-        // Crea e configura la tua TableView qui
         TableView<Product> tableView = new TableView<>();
-        // Configura le colonne e aggiungi i dati alla tableView
-
-        // Esempio di configurazione delle colonne
         TableColumn<Product, String> column1 = new TableColumn<>("Colonna 1");
         column1.setCellValueFactory(new PropertyValueFactory<>("property1"));
         TableColumn<Product, String> column2 = new TableColumn<>("Colonna 2");
         column2.setCellValueFactory(new PropertyValueFactory<>("property2"));
         tableView.getColumns().addAll(column1, column2);
 
-        // Aggiungi la tableView al container
         tableContainer.getChildren().add(tableView);
-        
-        // Imposta la larghezza preferita della tableView
-        tableView.setPrefWidth(400); // Questo sarà sovrascritto dal binding
-
-        // Assicurati che tableView possa crescere per riempire lo spazio
+        tableView.setPrefWidth(400);
         HBox.setHgrow(tableView, Priority.ALWAYS);
         
         return tableContainer;
@@ -466,14 +475,11 @@ public class DailyReport {
      */
     private HBox createMealItem(String mealName, String calories, String details, String path, VBox parentContainer) {
         HBox mealItem = new HBox(10);
+        
         mealItem.setPadding(new Insets(10));
         mealItem.setAlignment(Pos.BASELINE_LEFT);
         mealItem.setStyle("-fx-background-color: #FFFFFF; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 5;");
 
-        // Imposta la larghezza massima a metà della larghezza del contenitore padre
-        //mealItem.maxWidthProperty().bind(parentContainer.widthProperty().divide(2));
-
-        // Meal icon
         Image icon;
         try {
             icon = new Image(getClass().getResource(path).toExternalForm());
@@ -486,7 +492,6 @@ public class DailyReport {
         iconView.setFitWidth(40);
         iconView.setFitHeight(40);
 
-        // Text container (Meal name and calories)
         VBox textContainer = new VBox(5);
         Label mealLabel = new Label(mealName);
         mealLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
@@ -496,39 +501,25 @@ public class DailyReport {
         detailsLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #888888;");
         textContainer.getChildren().addAll(mealLabel, caloriesLabel, detailsLabel);
 
-        // Spacer to push the button to the right
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // "+" Button
         Button addButton = new Button("+");
         addButton.setStyle("-fx-font-size: 16px; -fx-text-fill: #FFFFFF; -fx-background-color: #007bff; -fx-background-radius: 20;");
-        addButton.setMinSize(30, 30);
+        addButton.setMinSize(30, 30);        
+        
         addButton.setOnMouseClicked(event -> {
-            // Create an instance of AddFoodForMeal
-            AddFoodForMeal addFoodForMeal = new AddFoodForMeal(mealName);
-            // Assuming createFoodForm returns a Node (e.g., VBox or Pane)
+            AddFoodForMeal addFoodForMeal = new AddFoodForMeal(mealName, this, this::updateDailyReport);
             Node foodForm = addFoodForMeal.searchFoodForm();
-
-            // Create an overlay pane with semi-transparent background
             VBox overlayPane = new VBox();
             overlayPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);");
             overlayPane.setAlignment(Pos.CENTER);
             overlayPane.setPrefSize(mainContent.getWidth(), mainContent.getHeight());
-
-            // Add the foodForm to the overlayPane
             overlayPane.getChildren().add(foodForm);
-
-            // Add the overlayPane to the mainContent StackPane
             mainContent.getChildren().add(overlayPane);
-
-            // Handle closing the overlay when done, perhaps in the foodForm's own controls
-            // For example, in the AddFoodForMeal class, have a button that, when clicked, removes the overlayPane from mainContent
-
-            // Alternatively, you can pass the overlayPane and mainContent to AddFoodForMeal
+            
             addFoodForMeal.setOverlayPane(overlayPane, mainContent);
-        });
-        
+        });        
         Button viewMeals = new Button(">");
         viewMeals.setStyle("-fx-font-size: 16px; -fx-text-fill: #FFFFFF; -fx-background-color: #007bff; -fx-background-radius: 20;");
         viewMeals.setMinSize(30, 30);
@@ -538,6 +529,9 @@ public class DailyReport {
         return mealItem;
     }
 
+    private void updateDailyReport() {
+    	System.out.println("yahoo");
+    }
 
     /*
     // Original updateCalories method and other methods commented out

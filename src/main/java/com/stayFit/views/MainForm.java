@@ -26,7 +26,6 @@ public class MainForm extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Stay Fit");
 
-        // Configura la sidebar e il layout principale
         VBox sidebar = new VBox(20);
         sidebar.setPadding(new Insets(30));
         sidebar.setStyle("-fx-background-color: #b22222;");
