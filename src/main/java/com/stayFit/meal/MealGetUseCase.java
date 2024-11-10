@@ -9,8 +9,12 @@ public class MealGetUseCase implements IMealGetUseCase {
 	public MealGetUseCase(IMealDAO mealDAO) {
 		this.mealDAO = mealDAO;
 	}
+	/* Metodo per capire se il pasto esiste già o deve crearlo*/
+	public List<Meal>getExistingMeals(MealGetRequestDTO mealGetRequestDTO)throws Exception{
+		return mealDAO.getExistingMeals(mealGetRequestDTO);
+	}
 	
-	public List<Meal>execute(MealGetRequestDTO mealGetRequestDTO)throws Exception{
-		return mealDAO.getAll(mealGetRequestDTO);
+	public List<Meal> getDailyNutritionalValues(MealGetRequestDTO mealGetRequestDTO) throws Exception{
+		return mealDAO.getDailyNutritionalValues(mealGetRequestDTO);
 	}
 }

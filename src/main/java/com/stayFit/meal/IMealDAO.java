@@ -11,5 +11,6 @@ public interface IMealDAO {
 	//public void update() throws Exception;
 	//public void delete() throws Exception;
 	//public Meal get() throws Exception;
-	public List<Meal> getAll(MealGetRequestDTO mealGetRequestDTO) throws Exception;
+	public List<Meal> getExistingMeals(MealGetRequestDTO mealGetRequestDTO) throws Exception;
+	public List<Meal> getDailyNutritionalValues(MealGetRequestDTO mealGetRequestDTO) throws Exception;
 }

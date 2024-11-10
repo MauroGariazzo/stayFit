@@ -8,12 +8,32 @@ public class Meal {
 	private LocalDate date;
 	private MealType mealType;
 	private int fkUser;
-	
+	private double calories;
+	private double proteins;
+	private double fats;
+	private double carbs;
+	private double sugars;
+	private double salt;
+		
 	public Meal(int id, LocalDate date, MealType mealType, int fkUser) {
 		this.id = id;
 		this.date = date;
 		this.mealType = mealType;
 		this.fkUser = fkUser;
+	}
+	
+	public Meal(LocalDate date, int fkUser, double calories, double proteins, double fats,
+			double carbs, double sugars, double salt) {
+		//this.id = id;
+		this.date = date;
+		//this.mealType = mealType;
+		this.fkUser = fkUser;
+		this.calories = calories;
+		this.proteins = proteins;
+		this.fats = fats;
+		this.carbs = carbs;
+		this.sugars = sugars;
+		this.salt = salt;
 	}
 
 	public int getId() {
@@ -48,5 +68,52 @@ public class Meal {
 		this.fkUser = fkUser;
 	}
 	
-	
+	public double getCalories() {
+		return calories;
+	}
+
+	public void setCalories(double calories) {
+		this.calories = calories;
+	}
+
+	public double getProteins() {
+		return proteins;
+	}
+
+	public void setProteins(double proteins) {
+		this.proteins = proteins;
+	}
+
+	public double getFats() {
+		return fats;
+	}
+
+	public void setFats(double fats) {
+		this.fats = fats;
+	}
+
+	public double getCarbs() {
+		return carbs;
+	}
+
+	public void setCarbs(double carbs) {
+		this.carbs = carbs;
+	}
+
+	public double getSugars() {
+		return sugars;
+	}
+
+	public void setSugars(double sugars) {
+		this.sugars = sugars;
+	}
+
+	public double getSalt() {
+		return salt;
+	}
+
+	public void setSalt(double salt) {
+		this.salt = salt;
+	}
+
 }

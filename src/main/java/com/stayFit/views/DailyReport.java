@@ -37,6 +37,8 @@ public class DailyReport implements PortionListener {
 	private Label fatLabel;
 	private ProgressBar carbProgressBar;
 	private Label carbLabel;
+	private Label sugarsLabel;
+	private Label saltLabel;
 	private Button selectedDayButton;
 	private VBox calendarBox;
 	private Label monthLabel;
@@ -83,7 +85,17 @@ public class DailyReport implements PortionListener {
 		this.pguc = new PortionGetUseCase(portionDAO);
 		this.pcuc = new PortionCreateUseCase(portionDAO);
 		this.portionController = new PortionController(pcuc, pguc);
-		// this.pcrDTO = new PortionCreateRequestDTO();
+	
+		caloriesLabel = new Label();
+		proteinLabel = new Label();
+		fatLabel = new Label();
+		carbLabel = new Label();
+		sugarsLabel = new Label();
+		saltLabel = new Label();
+		caloriesProgressBar = new ProgressBar();		
+		proteinProgressBar = new ProgressBar();		
+		fatProgressBar = new ProgressBar();		
+		carbProgressBar = new ProgressBar();				
 	}
 
 	@Override
@@ -114,15 +126,13 @@ public class DailyReport implements PortionListener {
 					portionsCreateRequestDTO.add(pcrDTO);
 				}
 				portionController.create(portionsCreateRequestDTO, id);
-			} catch (Exception ex) {
+			} 
+			catch (Exception ex) {
 				// stampa errore
 				System.out.println(ex.getMessage());
 			}
 		}
 
-		// Esempio: aggiornare la tabella delle porzioni o le barre di progresso
-		// updatePortionsTable(mealType, portions);
-		// updateNutritionalOverview(portions);
 	}
 
 	public StackPane getDailyReportView() {
@@ -134,7 +144,7 @@ public class DailyReport implements PortionListener {
 		topContentBox.setAlignment(Pos.TOP_LEFT);
 
 		// Add the top sections
-		topContentBox.getChildren().addAll(createNavigationBar(), createCalendarView(), createCalorieOverview());
+		topContentBox.getChildren().addAll(createNavigationBar(), createCalendarView(), createCaloriesOverview());
 
 		VBox mealsBox = new VBox(20);
 		mealsBox.setAlignment(Pos.TOP_LEFT);
@@ -171,90 +181,87 @@ public class DailyReport implements PortionListener {
 				"-fx-background-color: #FFFFFF; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 5;");
 
 		// Imposta il CellFactory per personalizzare la visualizzazione di ogni elemento
-		listViewPortions.setCellFactory(new Callback<ListView<PortionGetResponseDTO>, ListCell<PortionGetResponseDTO>>() {
-			@Override
-			public ListCell<PortionGetResponseDTO> call(ListView<PortionGetResponseDTO> listView) {
-				return new ListCell<PortionGetResponseDTO>() {
-					private HBox content;
-	                private int id;
-	                private ImageView imageView;
-	                private VBox detailsBox;
-	                private Label nameLabel;
-	                private Label caloriesLabel;
-	                private Label proteinsLabel;
-	                private Label fatsLabel;
-	                private Label carbsLabel;
-	                private Label sugarsLabel;
-	                private Label saltLabel;
-	                private Button deleteButton;
-	                private Region spacer;
-
-					{
-						nameLabel = new Label();
-	                    nameLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-	                    caloriesLabel = new Label();
-	                    proteinsLabel = new Label();
-	                    fatsLabel = new Label();
-	                    carbsLabel = new Label();
-	                    sugarsLabel = new Label();
-	                    saltLabel = new Label();							                    
-	                    detailsBox = new VBox(2);
-	                    detailsBox.getChildren().addAll(nameLabel, caloriesLabel,
-	                            proteinsLabel, fatsLabel, carbsLabel, sugarsLabel, saltLabel);
-	                    
-	                    deleteButton = new Button("-");
-	                    
-	                    deleteButton.setOnAction(event -> {
-	                    	PortionGetResponseDTO selectedItem = getItem();
-	                    	try {
-	                    		if(areUSure()) {
-	                    			PortionController portionControllerDelete = new PortionController(new PortionDeleteUseCase(new PortionDAO(new DBConnector())));
-	                    			portionControllerDelete.delete(selectedItem.id);	                    			
-	                    			populateListView(selectedItem.mealType);
-	                    		}
-	                    	}
-	                    	catch(Exception ex) {
-	                    		showAlert(ex.getMessage(), Alert.AlertType.WARNING);
-	                    	}
-	                    });
-	                    
-	                    spacer = new Region();
-	                    HBox.setHgrow(spacer, Priority.ALWAYS);
-
-	                    //content = new HBox(10, imageView, detailsBox, spacer, addButton);
-	                    content = new HBox(10, detailsBox, spacer, deleteButton);
-	                    content.setAlignment(Pos.CENTER_LEFT);
-					}
-
+		listViewPortions
+				.setCellFactory(new Callback<ListView<PortionGetResponseDTO>, ListCell<PortionGetResponseDTO>>() {
 					@Override
-					protected void updateItem(PortionGetResponseDTO item, boolean empty) {
-						super.updateItem(item, empty);
-						if (item == null || empty) {
-							setGraphic(null);
-						}
-						else {
-							System.out.println(item.id);
-							nameLabel.setText("Nome: " + item.product_name);	                        	                        
-	                        caloriesLabel.setText(String.format("Energia (kcal): %.1f kcal", item.calories));
-	                        proteinsLabel.setText(String.format("Proteine: %.1f g", item.proteins));
-	                        fatsLabel.setText(String.format("Grassi: %.1f g", item.fats));
-	                        carbsLabel.setText(String.format("Carboidrati: %.1f g", item.carbs));
-	                        sugarsLabel.setText(String.format("Zuccheri: %.1f g", item.sugars));
-	                        saltLabel.setText(String.format("Sale: %.1f g", item.salt));
-							setGraphic(content);
-						}
-					}
-				};
-			}
-		});
+					public ListCell<PortionGetResponseDTO> call(ListView<PortionGetResponseDTO> listView) {
+						return new ListCell<PortionGetResponseDTO>() {
+							private HBox content;
+							private int id;
+							private ImageView imageView;
+							private VBox detailsBox;
+							private Label nameLabel;
+							private Label caloriesLabel;
+							private Label proteinsLabel;
+							private Label fatsLabel;
+							private Label carbsLabel;
+							private Label sugarsLabel;
+							private Label saltLabel;
+							private Button deleteButton;
+							private Region spacer;
 
-		// List<Product> products = mc.
-		// listView.getItems().addAll(listaDiProdotti);
+							{
+								nameLabel = new Label();
+								nameLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+								caloriesLabel = new Label();
+								proteinsLabel = new Label();
+								fatsLabel = new Label();
+								carbsLabel = new Label();
+								sugarsLabel = new Label();
+								saltLabel = new Label();
+								detailsBox = new VBox(2);
+								detailsBox.getChildren().addAll(nameLabel, caloriesLabel, proteinsLabel, fatsLabel,
+										carbsLabel, sugarsLabel, saltLabel);
+
+								deleteButton = new Button("-");
+
+								deleteButton.setOnAction(event -> {
+									PortionGetResponseDTO selectedItem = getItem();
+									try {
+										if (areUSure()) {
+											PortionController portionControllerDelete = new PortionController(
+													new PortionDeleteUseCase(new PortionDAO(new DBConnector())));
+											portionControllerDelete.delete(selectedItem.id);
+											populateListView(selectedItem.mealType);
+										}
+									} catch (Exception ex) {
+										showAlert(ex.getMessage(), Alert.AlertType.WARNING);
+									}
+								});
+
+								spacer = new Region();
+								HBox.setHgrow(spacer, Priority.ALWAYS);
+
+								// content = new HBox(10, imageView, detailsBox, spacer, addButton);
+								content = new HBox(10, detailsBox, spacer, deleteButton);
+								content.setAlignment(Pos.CENTER_LEFT);
+							}
+
+							@Override
+							protected void updateItem(PortionGetResponseDTO item, boolean empty) {
+								super.updateItem(item, empty);
+								if (item == null || empty) {
+									setGraphic(null);
+								}
+								else {
+									nameLabel.setText("Nome: " + item.product_name);
+									caloriesLabel.setText(String.format("Energia (kcal): %.1f kcal", item.calories));
+									proteinsLabel.setText(String.format("Proteine: %.1f g", item.proteins));
+									fatsLabel.setText(String.format("Grassi: %.1f g", item.fats));
+									carbsLabel.setText(String.format("Carboidrati: %.1f g", item.carbs));
+									sugarsLabel.setText(String.format("Zuccheri: %.1f g", item.sugars));
+									saltLabel.setText(String.format("Sale: %.1f g", item.salt));
+									setGraphic(content);
+								}
+							}
+						};
+					}
+				});
 
 		listContainer.getChildren().add(listViewPortions);
 		listViewPortions.setPrefWidth(400);
 		HBox.setHgrow(listViewPortions, Priority.ALWAYS);
-
+		updateDailyReport();
 		return listContainer;
 	}
 
@@ -280,62 +287,39 @@ public class DailyReport implements PortionListener {
 		return navigationBar;
 	}
 
-	/**
-	 * Updates the label of the current month.
-	 */
 	private void updateMonthLabel() {
 		monthLabel.setText(currentYearMonth.getMonth().toString() + " " + currentYearMonth.getYear());
 	}
 
-	/**
-	 * Creates the calendar view.
-	 *
-	 * @return A VBox containing the calendar.
-	 */
 	private VBox createCalendarView() {
 		calendarBox = createCalendarOverview();
 		return calendarBox;
 	}
 
-	/**
-	 * Navigates to the previous month and updates the calendar.
-	 */
 	private void navigatePrevious() {
 		YearMonth minYearMonth = YearMonth.from(startingDate);
 		if (currentYearMonth.isAfter(minYearMonth)) {
 			currentYearMonth = currentYearMonth.minusMonths(1);
 			updateMonthLabel();
-			updateCalendarView();			
+			updateCalendarView();
 		}
 	}
 
-	/**
-	 * Navigates to the next month and updates the calendar.
-	 */
 	private void navigateNext() {
-		YearMonth maxYearMonth = YearMonth.from(LocalDate.now());		
+		YearMonth maxYearMonth = YearMonth.from(LocalDate.now());
 		if (currentYearMonth.isBefore(maxYearMonth)) {
 			currentYearMonth = currentYearMonth.plusMonths(1);
 			updateMonthLabel();
-			updateCalendarView();			
+			updateCalendarView();
 		}
 	}
 
-	/**
-	 * Updates the calendar view.
-	 */
 	private void updateCalendarView() {
 		VBox newCalendar = createCalendarOverview();
 		calendarBox.getChildren().clear();
 		calendarBox.getChildren().addAll(newCalendar.getChildren());
 	}
 
-	/**
-	 * Creates a monthly calendar view where only days up to a specific date are
-	 * enabled. Days before startingDate and after today are disabled.
-	 *
-	 * @return A VBox containing the calendar.
-	 */
 	private VBox createCalendarOverview() {
 		// Get today's date
 		LocalDate today = LocalDate.now();
@@ -373,7 +357,6 @@ public class DailyReport implements PortionListener {
 			LocalDate currentDate = currentYearMonth.atDay(day);
 			Button dayButton = new Button(String.valueOf(day));
 			dayButton.setPrefSize(40, 40);
-			
 
 			boolean isEnabled = isDayEnabled(currentDate, today);
 
@@ -385,6 +368,7 @@ public class DailyReport implements PortionListener {
 					dayButton.setStyle("-fx-background-color: #76ff03; -fx-text-fill: white; -fx-font-weight: bold;");
 					selectedDayButton = dayButton;
 					selectedDate = currentDate; // Imposta la data selezionata iniziale su oggi
+					updateDailyReport();
 				}
 
 				dayButton.setOnAction(e -> {
@@ -395,8 +379,8 @@ public class DailyReport implements PortionListener {
 
 					dayButton.setStyle("-fx-background-color: #76ff03; -fx-text-fill: white; -fx-font-weight: bold;");
 					selectedDayButton = dayButton;
-
 					selectedDate = currentDate; // Aggiorna la data selezionata
+					updateDailyReport();
 				});
 
 			} else {
@@ -436,7 +420,7 @@ public class DailyReport implements PortionListener {
 		return true;
 	}
 
-	private VBox createCalorieOverview() {
+	private VBox createCaloriesOverview() {
 		// Section title
 		Label title = new Label("Panoramica Nutrizionale");
 		title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
@@ -444,39 +428,31 @@ public class DailyReport implements PortionListener {
 		// Calories progress bar
 		caloriesProgressBar = new ProgressBar(0);
 		caloriesProgressBar.setPrefWidth(300);
+		caloriesProgressBar.setMinHeight(20);
 		caloriesProgressBar.setStyle("-fx-accent: #76ff03;"); // Initial green color
-
-		// Calories label
-		caloriesLabel = new Label("Calorie Assunte: 0 / " + MAX_CALORIES);
 		caloriesLabel.setStyle("-fx-font-size: 14px;");
 
 		// Protein progress bar
 		proteinProgressBar = new ProgressBar(0);
 		proteinProgressBar.setPrefWidth(100);
-		proteinProgressBar.setStyle("-fx-accent: #2196F3;"); // Blue
-
-		// Protein label
-		proteinLabel = new Label("Proteine: 0g / " + MAX_PROTEINS + "g");
+		proteinProgressBar.setMinHeight(10);
+		proteinProgressBar.setStyle("-fx-accent: #76ff03;");
 		proteinLabel.setStyle("-fx-font-size: 12px;");
 
 		// Fat progress bar
 		fatProgressBar = new ProgressBar(0);
 		fatProgressBar.setPrefWidth(100);
-		fatProgressBar.setStyle("-fx-accent: #FFC107;"); // Yellow
-
-		// Fat label
-		fatLabel = new Label("Grassi: 0g / " + MAX_FATS + "g");
+		fatProgressBar.setMinHeight(10);
+		fatProgressBar.setStyle("-fx-accent: #76ff03;");
 		fatLabel.setStyle("-fx-font-size: 12px;");
 
 		// Carb progress bar
 		carbProgressBar = new ProgressBar(0);
 		carbProgressBar.setPrefWidth(100);
-		carbProgressBar.setStyle("-fx-accent: #FF5722;"); // Orange
-
-		// Carb label
-		carbLabel = new Label("Carboidrati: 0g / " + MAX_CARBS + "g");
+		carbProgressBar.setMinHeight(10);
+		carbProgressBar.setStyle("-fx-accent: #76ff03;");
 		carbLabel.setStyle("-fx-font-size: 12px;");
-
+		
 		// Layout for calorie bars
 		VBox calorieBox = new VBox(10);
 		calorieBox.setAlignment(Pos.CENTER);
@@ -498,6 +474,39 @@ public class DailyReport implements PortionListener {
 		return calorieBox;
 	}
 
+	private void updateNutritionalOverview(List<MealGetResponseDTO> meals) {
+		double totalCalories = 0;
+		double totalProteins = 0;
+		double totalFats = 0;
+		double totalCarbs = 0;
+				
+
+		for (MealGetResponseDTO meal : meals) {
+			System.out.println(meal.calories);
+			totalCalories += meal.calories;
+			totalProteins += meal.proteins;
+			totalFats += meal.fats;
+			totalCarbs += meal.carbs;
+		}
+
+		// Aggiorna le etichette
+		caloriesLabel.setText(String.format("Calorie Assunte: %.1f / %d %s", totalCalories, MAX_CALORIES, "cal"));
+		proteinLabel.setText(String.format("Proteine: %.1f g / %d g", totalProteins, MAX_PROTEINS));
+		fatLabel.setText(String.format("Grassi: %.1f g / %d g", totalFats, MAX_FATS));
+		carbLabel.setText(String.format("Carboidrati: %.1f g / %d g", totalCarbs, MAX_CARBS));
+
+		// Aggiorna le barre di progresso
+		caloriesProgressBar.setProgress(totalCalories / MAX_CALORIES);
+		proteinProgressBar.setProgress(totalProteins / MAX_PROTEINS);
+		fatProgressBar.setProgress(totalFats / MAX_FATS);
+		carbProgressBar.setProgress(totalCarbs / MAX_CARBS);
+
+		// Cambia colore delle barre se si supera il massimo
+		//caloriesProgressBar.setStyle(totalCalories > MAX_CALORIES ? "-fx-accent: red;" : "-fx-accent: #76ff03;");
+		//proteinProgressBar.setStyle(totalProteins > MAX_PROTEINS ? "-fx-accent: red;" : "-fx-accent: #2196F3;");
+		//fatProgressBar.setStyle(totalFats > MAX_FATS ? "-fx-accent: red;" : "-fx-accent: #FFC107;");
+		//carbProgressBar.setStyle(totalCarbs > MAX_CARBS ? "-fx-accent: red;" : "-fx-accent: #FF5722;");
+	}
 
 	private VBox createMacroProgressBox(String name, ProgressBar progressBar, Label label) {
 		Label macroNameLabel = new Label(name);
@@ -510,7 +519,6 @@ public class DailyReport implements PortionListener {
 		return macroBox;
 	}
 
-	
 	private HBox createMealItem(String mealName, String calories, String details, String path, VBox parentContainer) {
 		HBox mealItem = new HBox(10);
 
@@ -522,13 +530,13 @@ public class DailyReport implements PortionListener {
 		Image icon;
 		try {
 			icon = new Image(getClass().getResource(path).toExternalForm());
-		} 
-		
+		}
+
 		catch (NullPointerException e) {
 			System.err.println("Icon not found: " + path);
 			icon = new Image("file:resources/default.png"); // Default image
 		}
-		
+
 		ImageView iconView = new ImageView(icon);
 		iconView.setFitWidth(40);
 		iconView.setFitHeight(40);
@@ -567,7 +575,7 @@ public class DailyReport implements PortionListener {
 		viewMeals.setStyle(
 				"-fx-font-size: 16px; -fx-text-fill: #FFFFFF; -fx-background-color: #007bff; -fx-background-radius: 20;");
 		viewMeals.setMinSize(30, 30);
-		viewMeals.setOnMouseClicked(event -> {			
+		viewMeals.setOnMouseClicked(event -> {
 			populateListView(mealName);
 		});
 
@@ -576,8 +584,16 @@ public class DailyReport implements PortionListener {
 		return mealItem;
 	}
 
+	// AGGIORNA I VALORI NUTRIZIONALI ASSUNTI DURANTE LA GIORNATA
 	private void updateDailyReport() {
-		System.out.println("yahoo");
+		try {			
+			MealGetRequestDTO mgrDTO = new MealGetRequestDTO(selectedDate, 1);
+			List<MealGetResponseDTO> meals = mc.getDailyNutritions(mgrDTO);
+			updateNutritionalOverview(meals);
+		}
+		catch (Exception ex) {
+			showAlert(ex.getMessage(), Alert.AlertType.WARNING);
+		}
 	}
 
 	private void populateListView(String mealName) {
@@ -586,16 +602,16 @@ public class DailyReport implements PortionListener {
 			return;
 		}
 
-		PortionGetRequestDTO pgrDTO = new PortionGetRequestDTO(MealType.valueOf(mealName.toUpperCase()), selectedDate, 1);
+		PortionGetRequestDTO pgrDTO = new PortionGetRequestDTO(MealType.valueOf(mealName.toUpperCase()), selectedDate,
+				1);
 		try {
-			List<PortionGetResponseDTO> portionsDTO = portionController.getPortionsDTO(pgrDTO);				
+			List<PortionGetResponseDTO> portionsDTO = portionController.getPortionsDTO(pgrDTO);
 			// Esegui l'aggiornamento dell'interfaccia grafica sul thread JavaFX
 			Platform.runLater(() -> {
 				listViewPortions.getItems().clear();
 				listViewPortions.getItems().addAll(portionsDTO);
 			});
-		} 
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			showAlert(ex.getMessage(), Alert.AlertType.WARNING);
 			ex.printStackTrace();
 		}
@@ -608,34 +624,32 @@ public class DailyReport implements PortionListener {
 		alert.setContentText(message);
 		alert.showAndWait();
 	}
-	
-	public boolean areUSure() {	    
-	    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-	    alert.setTitle("Conferma");
-	    alert.setHeaderText("Azione Richiesta");
-	    alert.setContentText("Sei sicuro di voler procedere?");
 
-	    // Crea i pulsanti personalizzati
-	    ButtonType buttonYes = new ButtonType("Sì", ButtonBar.ButtonData.YES);
-	    ButtonType buttonNo = new ButtonType("No", ButtonBar.ButtonData.NO);
+	public boolean areUSure() {
+		Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+		alert.setTitle("Conferma");
+		alert.setHeaderText("Azione Richiesta");
+		alert.setContentText("Sei sicuro di voler procedere?");
 
-	    // Rimuovi i pulsanti predefiniti e aggiungi quelli personalizzati
-	    alert.getButtonTypes().setAll(buttonYes, buttonNo);
+		// Crea i pulsanti personalizzati
+		ButtonType buttonYes = new ButtonType("Sì", ButtonBar.ButtonData.YES);
+		ButtonType buttonNo = new ButtonType("No", ButtonBar.ButtonData.NO);
 
-	    // Mostra l'Alert e aspetta la risposta dell'utente
-	    Optional<ButtonType> result = alert.showAndWait();
+		// Rimuovi i pulsanti predefiniti e aggiungi quelli personalizzati
+		alert.getButtonTypes().setAll(buttonYes, buttonNo);
 
-	    if (result.isPresent()) {
-	        if (result.get() == buttonYes){
-	            return true;
-	        } 
-	        else {	        	        	
-	            return false;
-	        }
-	    }
-	    return false;
+		// Mostra l'Alert e aspetta la risposta dell'utente
+		Optional<ButtonType> result = alert.showAndWait();
+
+		if (result.isPresent()) {
+			if (result.get() == buttonYes) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		return false;
 	}
-
 
 	/*
 	 * public void updateCalories(int additionalCalories) { totalCalories +=

@@ -45,7 +45,7 @@ public class MealDAO implements IMealDAO {
 		return generatedId;
 	}
 
-	public List<Meal> getAll(MealGetRequestDTO mealGetRequestDTO) throws Exception{
+	public List<Meal> getExistingMeals(MealGetRequestDTO mealGetRequestDTO) throws Exception{
 		String query = "SELECT * FROM stayFit.meal WHERE mealType = ? AND mealUpdateDate = ? AND fk_user = ?";
 		List<Meal>meals = new ArrayList<>();
 		try (PreparedStatement pstmt = dbConnector.getConnection().prepareStatement(query)) {
@@ -68,28 +68,36 @@ public class MealDAO implements IMealDAO {
 		return meals;
 	}
 	
-	/*public void update(MealCreateRequestDTO mealCreateRequestDTO) throws Exception {
-		String query = "UPDATE stayFit.meal SET mealUpdateDate = ?, mealType = ?, fk_user = ?";
-
-		try (PreparedStatement pstmt = dbConnector.getConnection().prepareStatement(query,
-				Statement.RETURN_GENERATED_KEYS)) {
-			pstmt.setDate(1, Date.valueOf(mealCreateRequestDTO.mealUpdateDate));
-			pstmt.setInt(2, mealCreateRequestDTO.mealType.ordinal());
-			pstmt.setInt(3, mealCreateRequestDTO.fk_user);
-
-			pstmt.execute();
-
-			try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-				if (generatedKeys.next()) {
-					generatedId = generatedKeys.getInt(1);
-
-				} else {
-					throw new Exception("Creazione utente fallita, nessun ID ottenuto.");
+	public List<Meal> getDailyNutritionalValues(MealGetRequestDTO mealGetRequestDTO) throws Exception{
+		String query = "SELECT m.mealUpdateDate, SUM(p.proteins) AS proteins, SUM(p.carbs) AS carbs, "
+				+ "SUM(p.fats) AS fats, SUM(p.calories) AS calories, SUM(p.sugars) AS sugars, SUM(p.salt) AS salt "
+				+ "FROM meal m "
+				+ "JOIN portion p "
+				+ "ON m.id = p.meal_fk "
+				+ "WHERE m.mealUpdateDate = ? AND fk_user = ? ";
+		
+		List<Meal>meals = new ArrayList<>();
+		try (PreparedStatement pstmt = dbConnector.getConnection().prepareStatement(query)) {
+			pstmt.setDate(1, Date.valueOf(mealGetRequestDTO.mealUpdateDate));
+			pstmt.setInt(2, mealGetRequestDTO.fk_user);
+			try(ResultSet rs = pstmt.executeQuery()){
+				
+				while(rs.next()) {	
+					//int id, LocalDate date, int fkUser, double calories, double proteins, double fats,
+					//double carbs, double sugars, double salt
+					Meal meal = new Meal(mealGetRequestDTO.mealUpdateDate, mealGetRequestDTO.fk_user,
+							rs.getDouble("calories"), rs.getDouble("proteins"), rs.getDouble("fats"), rs.getDouble("carbs"),
+							rs.getDouble("sugars"), rs.getDouble("salt"));
+					meals.add(meal);
 				}
 			}
-		} catch (Exception ex) {
+		}
+		
+		catch(Exception ex) {
 			throw new Exception(ex.getMessage());
 		}
-		return generatedId;
-	}*/
+		return meals;
+	}
+	
+
 }

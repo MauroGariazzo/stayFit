@@ -14,4 +14,9 @@ public class MealGetRequestDTO {
 		this.mealType = mealType;
 		this.fk_user = fk_user;
 	}
+	
+	public MealGetRequestDTO(LocalDate mealUpdateDate, int fk_user) {
+		this.mealUpdateDate = mealUpdateDate;		
+		this.fk_user = fk_user;
+	}
 }
