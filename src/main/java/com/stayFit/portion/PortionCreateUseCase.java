@@ -10,7 +10,7 @@ public class PortionCreateUseCase implements IPortionCreateUseCase{
 	public void execute(List<PortionCreateRequestDTO> portions, int id)throws Exception {
 		for(PortionCreateRequestDTO p : portions) {
 			p.meal_fk = id;
-			portionDAO.insert(p);
+			portionDAO.upsert(p);
 		}		
 	}
 }

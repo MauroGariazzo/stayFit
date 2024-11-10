@@ -3,7 +3,10 @@ package com.stayFit.views;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.stayFit.portion.PortionController;
 import com.stayFit.portion.PortionCreateRequestDTO;
+import com.stayFit.portion.PortionDAO;
+import com.stayFit.portion.PortionGetResponseDTO;
 import com.stayFit.product.ProductController;
 import com.stayFit.product.ProductCreateRequestDTO;
 import com.stayFit.product.ProductDAO;
@@ -11,11 +14,11 @@ import com.stayFit.product.ProductGetRequestDTO;
 import com.stayFit.product.ProductGetResponseDTO;
 import com.stayFit.utils.OpenFoodFactsAPI;
 import com.stayFit.utils.PortionListener;
-
-import javafx.animation.PauseTransition;
+import com.stayFit.portion.PortionGetUseCase;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -28,10 +31,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.util.Callback;
-import javafx.util.Duration;
 
 import com.stayFit.product.ProductCreateUseCase;
 import com.stayFit.product.ProductGetUseCase;
@@ -48,7 +48,7 @@ public class AddFoodForMeal {
 	private ListView<ProductGetResponseDTO> foodListView;
 	private String mealType;
 	private double grammage;
-	public List<PortionCreateRequestDTO>portions;
+	public List<PortionGetResponseDTO>portions;
 	private PortionListener listener;
 	private Runnable updateDailyReport;
 	
@@ -78,9 +78,35 @@ public class AddFoodForMeal {
 	            //showError("Per favore, inserisci il nome del cibo.");
 	            return;
 	        }
-	        populateTableView(name);
-	        foodName.clear();
+	        foodListView.getItems().clear();  // Pulisce la lista
+	        Label loadingMessage = new Label("Caricamento dei prodotti in corso...");
+	        foodListView.setPlaceholder(loadingMessage);
+	        
+	        Task<Void> task = new Task<Void>() {
+	            @Override
+	            protected Void call() throws Exception {
+	                populateListView(name);
+	                return null;
+	            }
+
+	            @Override
+	            protected void succeeded() {
+	                super.succeeded();
+	                Platform.runLater(() -> foodName.clear()); // Pulisce il campo di testo
+	            }
+
+	            @Override
+	            protected void failed() {
+	                super.failed();
+	                Throwable exception = getException();
+	                Platform.runLater(() -> showAlert(exception.getMessage(), Alert.AlertType.WARNING));
+	                exception.printStackTrace();
+	            }
+	        };
+	        
+	        new Thread(task).start();
 	    });
+
 
 	    // ListView per la lista degli alimenti
 	    foodListView = new ListView<>();
@@ -185,10 +211,8 @@ public class AddFoodForMeal {
 	                            imageView.setImage(item.productImage);
 	                        } 
 	                        else {
-	                        	System.out.println("beccato");
 	                            imageView.setImage(null);
-	                        }
-	                        //System.out.println(item.productName);
+	                        }	                        
 	                        id = item.id;
 	                        nameLabel.setText("Nome: " + item.productName);
 	                        brandLabel.setText("Marca: " + item.brand);
@@ -236,83 +260,100 @@ public class AddFoodForMeal {
 	}
 
     
-    private void populateTableView(String name) {
-    	foodListView.getItems().clear();
-    	try {
-    		//cerca i prodotti dal db
-    		//se la lista è uguale a 0, 
-    		//fai la ricerca dall'api
-    		ProductController controller = new ProductController(    				 
-    				 new ProductCreateUseCase(new ProductDAO(new DBConnector())),
-    				 new ProductGetUseCase(new ProductDAO(new DBConnector())));
-    		
-    		ProductGetRequestDTO productDTO = new ProductGetRequestDTO(); 
-    		productDTO.productName = name;
-    		productDTO.brand = name;
-    		productDTO.category = name;
-    		List<ProductGetResponseDTO>products = controller.get(productDTO);
-    		
-    		if(products.size()>0) {
-    			populateFromDB(products);
-    		}
-    		
-    		else {
-    			populateFromAPI(name, controller, products);                 
-    		}
+	private void populateListView(String name) {
+	    // La pulizia della lista e l'impostazione del placeholder sono già eseguite sul thread principale
+	    try {
+	        ProductController controller = new ProductController(                     
+	                 new ProductCreateUseCase(new ProductDAO(new DBConnector())),
+	                 new ProductGetUseCase(new ProductDAO(new DBConnector())));
+	        
+	        ProductGetRequestDTO productDTO = new ProductGetRequestDTO(); 
+	        productDTO.productName = name;
+	        productDTO.brand = name;
+	        productDTO.category = name;
+	        List<ProductGetResponseDTO> products = controller.get(productDTO);
+	        
+	        if(products.size() > 0) {
+	            populateFromDB(products);
+	        }
+	        else {
+	            populateFromAPI(name, controller, products);                 
+	        }
+	        
+	    } 
+	    catch (Exception ex) {
+	        Platform.runLater(() -> showAlert(ex.getMessage(), Alert.AlertType.WARNING));
+	        ex.printStackTrace();
+	    }
+	}
+
+    
+    private void populateFromDB(List<ProductGetResponseDTO> products) {
+        Platform.runLater(() -> {
+            for (ProductGetResponseDTO product : products) {                        
+                foodListView.getItems().add(product);
+            }
+        });
+    }
+
+    
+    private void populateFromAPI(String name, ProductController controller, List<ProductGetResponseDTO> products) throws Exception {        
+        for (ProductGetResponseDTO product : OpenFoodFactsAPI.search(name)) {
+            ProductCreateRequestDTO pcrDTO = new ProductCreateRequestDTO();
             
-        } 
-    	catch (Exception ex) {
-    		showError(ex.getMessage());
-    		ex.printStackTrace();
+            pcrDTO.productName = product.productName;
+            pcrDTO.brand = product.brand;
+            pcrDTO.category = product.category;
+            pcrDTO.productImage = product.productImage;            
+            pcrDTO.calories = product.calories;
+            pcrDTO.carbs = product.carbs;
+            pcrDTO.fats = product.fats;
+            pcrDTO.sugars = product.sugars;
+            pcrDTO.salt = product.salt;
+            pcrDTO.proteins = product.proteins;
+            controller.create(pcrDTO); // Inserisci il prodotto nel db
+            products.add(product);            
         }
+        
+        ProductGetRequestDTO productDTO = new ProductGetRequestDTO(); 
+        productDTO.productName = name;
+        productDTO.brand = name;
+        productDTO.category = name;
+        products = controller.get(productDTO);
+        
+        // Aggiorna la UI sul thread principale
+        populateFromDB(products);
     }
-    
-    private void populateFromDB(List<ProductGetResponseDTO>products) {
-    	for (ProductGetResponseDTO product : products) {    				
-            foodListView.getItems().add(product);
-        }
-    }
-    
-    private void populateFromAPI(String name, ProductController controller, List<ProductGetResponseDTO>products) throws Exception{    	
-    	for (ProductGetResponseDTO product : OpenFoodFactsAPI.search(name)) {
-			ProductCreateRequestDTO pcrDTO = new ProductCreateRequestDTO();
-			
-			pcrDTO.productName = product.productName;
-			pcrDTO.brand = product.brand;
-			pcrDTO.category = product.category;
-			pcrDTO.productImage = product.productImage;			
-			pcrDTO.calories = product.calories;
-			pcrDTO.carbs = product.carbs;
-			pcrDTO.fats = product.fats;
-			pcrDTO.sugars = product.sugars;
-			pcrDTO.salt = product.salt;
-			pcrDTO.proteins = product.proteins;
-			controller.create(pcrDTO); //inserisci il prodotto nel db
-			products.add(product);			
-    	}
-    	
-    	ProductGetRequestDTO productDTO = new ProductGetRequestDTO(); 
-		productDTO.productName = name;
-		productDTO.brand = name;
-		productDTO.category = name;
-		products = controller.get(productDTO);
-		populateFromDB(products);
-    }
+
     
     private void createPortion() {
-    	PortionCreateRequestDTO pcrd = new PortionCreateRequestDTO();
-    	pcrd.grams = grammage;
+    	PortionCreateRequestDTO pcrDTO = new PortionCreateRequestDTO();
     	ProductGetResponseDTO product = foodListView.getSelectionModel().selectedItemProperty().get();
-    	System.out.println(product.id);
-    	pcrd.product_fk = product.id;
-    	portions.add(pcrd);    	    	
+    	pcrDTO.grams = grammage;    	    	
+    	pcrDTO.product_fk = product.id;
+    	pcrDTO.calories = product.calories;
+    	pcrDTO.carbs = product.carbs;
+    	pcrDTO.fats = product.fats;
+    	pcrDTO.proteins = product.proteins;
+    	pcrDTO.sugars = product.sugars;
+    	pcrDTO.salt = product.salt;
+ 
+    	PortionController pc = new PortionController(new PortionGetUseCase(new PortionDAO(new DBConnector())));
+    	try {    		   		
+    		PortionGetResponseDTO pgrDTO = pc.getPortionDTO(pcrDTO);    		
+    		portions.add(pgrDTO);
+    	}
+    	catch(Exception ex) {
+    		showAlert(ex.getMessage(), Alert.AlertType.WARNING);
+    	}
+    	   	
     }
     
-    private void showError(String message) {
-		Alert alert = new Alert(Alert.AlertType.ERROR);
-		alert.setTitle("Errore");
-		alert.setHeaderText(null);
-		alert.setContentText(message);
-		alert.showAndWait();
-	}        
+    private void showAlert(String message, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle("Errore");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }      
 }
