@@ -495,17 +495,17 @@ public class DailyReport implements PortionListener {
 		fatLabel.setText(String.format("Grassi: %.1f g / %d g", totalFats, MAX_FATS));
 		carbLabel.setText(String.format("Carboidrati: %.1f g / %d g", totalCarbs, MAX_CARBS));
 
-		// Aggiorna le barre di progresso
+		// Aggiorna le barre di progresso		
 		caloriesProgressBar.setProgress(totalCalories / MAX_CALORIES);
-		proteinProgressBar.setProgress(totalProteins / MAX_PROTEINS);
-		fatProgressBar.setProgress(totalFats / MAX_FATS);
-		carbProgressBar.setProgress(totalCarbs / MAX_CARBS);
+		proteinProgressBar.setProgress(totalProteins / MAX_PROTEINS < 0.1 ? 0.1:totalProteins / MAX_PROTEINS);
+		fatProgressBar.setProgress(totalFats / MAX_FATS < 0.1 ? 0.1:totalFats / MAX_FATS);
+		carbProgressBar.setProgress(totalCarbs / MAX_CARBS < 0.1 ? 0.1:totalCarbs / MAX_CARBS);
 
 		// Cambia colore delle barre se si supera il massimo
-		//caloriesProgressBar.setStyle(totalCalories > MAX_CALORIES ? "-fx-accent: red;" : "-fx-accent: #76ff03;");
-		//proteinProgressBar.setStyle(totalProteins > MAX_PROTEINS ? "-fx-accent: red;" : "-fx-accent: #2196F3;");
-		//fatProgressBar.setStyle(totalFats > MAX_FATS ? "-fx-accent: red;" : "-fx-accent: #FFC107;");
-		//carbProgressBar.setStyle(totalCarbs > MAX_CARBS ? "-fx-accent: red;" : "-fx-accent: #FF5722;");
+		caloriesProgressBar.setStyle(totalCalories > MAX_CALORIES ? "-fx-accent: red;" : "-fx-accent: #76ff03;");
+		proteinProgressBar.setStyle(totalProteins > MAX_PROTEINS ? "-fx-accent: red;" : "-fx-accent: #76ff03;");
+		fatProgressBar.setStyle(totalFats > MAX_FATS ? "-fx-accent: red;" : "-fx-accent: #76ff03;");
+		carbProgressBar.setStyle(totalCarbs > MAX_CARBS ? "-fx-accent: red;" : "-fx-accent: #76ff03;");
 	}
 
 	private VBox createMacroProgressBox(String name, ProgressBar progressBar, Label label) {

@@ -17,7 +17,7 @@ import com.stayFit.models.Product;
 import com.stayFit.product.ProductDAO;
 import com.stayFit.product.ProductGetResponseDTO;
 import com.stayFit.product.ProductCreateRequestDTO;
-import com.stayFit.registration.RegistrationDAO;
+import com.stayFit.registration.RegistrationUserCredentialsDAO;
 import com.stayFit.repository.DBConnector;
 
 import javafx.application.Platform;

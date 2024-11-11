@@ -2,7 +2,7 @@ package com.stayFit.views;
 
 import java.time.LocalDate;
 
-import javafx.application.Application;
+import com.stayFit.registration.ResponseUserDTO;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -17,12 +17,18 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class MainForm extends Application {
+public class MainForm {
+	
+	private ResponseUserDTO userDTO;
+	public MainForm(ResponseUserDTO userDTO) {
+		System.out.println(userDTO.id);
+		this.userDTO = userDTO;
+	}
 
     private BorderPane root;    
     private ScrollPane scrollPane; // Aggiunto ScrollPane come variabile di istanza
 
-    @Override
+    //@Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Stay Fit");
 
@@ -172,7 +178,7 @@ public class MainForm extends Application {
         scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane
     }
 
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         launch(args);
-    }
+    }*/
 }

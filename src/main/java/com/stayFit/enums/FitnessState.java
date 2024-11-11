@@ -1,8 +1,27 @@
 package com.stayFit.enums;
 
 public enum FitnessState {
-	SEDENTARIO,
-	POCO_ATTIVO,
-	MEDIAMENTE_ATTIVO,
-	MOLTO_ATTIVO
+	SEDENTARIO(0),
+	POCO_ATTIVO(1),
+	MEDIAMENTE_ATTIVO(2),
+	MOLTO_ATTIVO(3);
+	
+	 private final int code;
+	 FitnessState(int code) {
+	        this.code = code;
+	    }
+		
+		public int getCode() {
+	        return code;
+	    }
+
+
+	    public static String getStringFromCode(int code)throws IllegalArgumentException {
+	        for (FitnessState fitness : FitnessState.values()) {
+	            if (fitness.getCode() == code) {
+	                return fitness.name();
+	            }
+	        }
+	        throw new IllegalArgumentException("Codice non trovato");
+	    }
 }

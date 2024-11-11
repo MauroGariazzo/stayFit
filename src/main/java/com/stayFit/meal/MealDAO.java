@@ -56,7 +56,8 @@ public class MealDAO implements IMealDAO {
 				
 				while(rs.next()) {	
 					//int id, LocalDate date, MealType mealType, int fkUser
-					Meal meal = new Meal(rs.getInt("id"), mealGetRequestDTO.mealUpdateDate, mealGetRequestDTO.mealType, mealGetRequestDTO.fk_user);
+					Meal meal = new Meal(rs.getInt("id"), mealGetRequestDTO.mealUpdateDate, mealGetRequestDTO.mealType, 
+							mealGetRequestDTO.fk_user);
 					meals.add(meal);
 				}
 			}
