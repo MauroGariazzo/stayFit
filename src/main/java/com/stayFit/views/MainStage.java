@@ -1,7 +1,5 @@
 package com.stayFit.views;
 
-import java.time.LocalDate;
-
 import com.stayFit.registration.ResponseUserDTO;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -17,16 +15,16 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class MainForm {
+public class MainStage {
 	
 	private ResponseUserDTO userDTO;
-	public MainForm(ResponseUserDTO userDTO) {
+    private BorderPane root;
+    private ScrollPane scrollPane;
+    
+	public MainStage(ResponseUserDTO userDTO) {
 		System.out.println(userDTO.id);
 		this.userDTO = userDTO;
 	}
-
-    private BorderPane root;    
-    private ScrollPane scrollPane; // Aggiunto ScrollPane come variabile di istanza
 
     //@Override
     public void start(Stage primaryStage) {
@@ -41,12 +39,11 @@ public class MainForm {
 
         Label exitButton = createSidebarButtonWithImage("Exit", "/icons/exit.png");
         exitButton.setOnMouseClicked(e -> primaryStage.close());
-
-        LocalDate dateTest = LocalDate.of(2024, 10, 25);
+        
         Label foodsButton = createSidebarButtonWithImage("Foods", "/icons/report.png");
         foodsButton.setOnMouseClicked(e -> {
-            StackPane content = new DailyReport(2000, 150, 200, 300, dateTest).getDailyReportView();
-            scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane
+            StackPane content = new DailyReportStage(userDTO, 2000, 150, 200, 300, userDTO.subscriptionDate).getDailyReportView();
+            scrollPane.setContent(content);
         });
 
 
@@ -62,22 +59,22 @@ public class MainForm {
         Label aboutButton = createSidebarButtonWithImage("About", "/icons/report.png");
         aboutButton.setOnMouseClicked(e -> showAboutContent());
 
-        sidebar.getChildren().addAll(appTitle, foodsButton, drinksButton, dessertsButton, myCartButton, aboutButton, exitButton);
+        sidebar.getChildren().addAll(appTitle, foodsButton, drinksButton, dessertsButton, myCartButton, aboutButton, 
+        		exitButton);
 
         // Layout principale con area centrale modificabile
         root = new BorderPane();
         root.setLeft(sidebar);
 
-        // Incapsula solo l'area centrale in uno ScrollPane
+        // ScrollPane nell'area centrale
         scrollPane = new ScrollPane();
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
-        root.setCenter(scrollPane); // Imposta lo ScrollPane come contenuto centrale
-
-        // Mostra un contenuto predefinito all'avvio
+        root.setCenter(scrollPane);
+        
         showWelcomeContent();
 
-        Scene scene = new Scene(root);  // Usa root come nodo principale della scena
+        Scene scene = new Scene(root);  // root come nodo principale della scena
         primaryStage.setMaximized(true);
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -91,8 +88,7 @@ public class MainForm {
             image = new Image(getClass().getResource(imagePath).toExternalForm());
         } catch (NullPointerException e) {
             System.err.println("Immagine non trovata: " + imagePath);
-            // Puoi aggiungere un'immagine di default o gestire diversamente l'errore
-            image = new Image("file:resources/default.png"); // Assicurati di avere un'immagine di default
+            image = new Image("file:resources/default.png");
         }
         ImageView imageView = new ImageView(image);
         imageView.setFitWidth(24);
@@ -108,7 +104,7 @@ public class MainForm {
         return button;
     }
 
-    // Metodo per mostrare il contenuto della sezione "Drinks"
+
     private void showDrinksContent() {
         VBox content = new VBox(10);
         content.setAlignment(Pos.CENTER);
@@ -125,7 +121,6 @@ public class MainForm {
         scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane
     }
 
-    // Metodo per mostrare il contenuto della sezione "Desserts"
     private void showDessertsContent() {
         VBox content = new VBox(10);
         content.setAlignment(Pos.CENTER);
@@ -139,7 +134,6 @@ public class MainForm {
         scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane
     }
 
-    // Metodo per mostrare il contenuto della sezione "MyCart"
     private void showCartContent() {
         VBox content = new VBox(10);
         content.setAlignment(Pos.CENTER);
@@ -152,7 +146,6 @@ public class MainForm {
         scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane
     }
 
-    // Metodo per mostrare il contenuto della sezione "About"
     private void showAboutContent() {
         VBox content = new VBox(10);
         content.setAlignment(Pos.CENTER);
@@ -165,7 +158,6 @@ public class MainForm {
         scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane
     }
 
-    // Metodo per mostrare un contenuto di benvenuto predefinito
     private void showWelcomeContent() {
         VBox content = new VBox(10);
         content.setAlignment(Pos.CENTER);
@@ -177,8 +169,4 @@ public class MainForm {
         content.getChildren().addAll(title, message);
         scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane
     }
-
-    /*public static void main(String[] args) {
-        launch(args);
-    }*/
 }

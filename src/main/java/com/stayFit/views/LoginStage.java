@@ -17,7 +17,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
-public class Login extends Application {
+public class LoginStage extends Application {
 
     private TextField usernameField;
     private PasswordField passwordField;
@@ -71,7 +71,8 @@ public class Login extends Application {
         	LoginRequestDTO loginRequestDTO = new LoginRequestDTO(username, password);
         	try {
         		ResponseUserDTO response = loginController.login(loginRequestDTO);
-        		MainForm mainForm = new MainForm(response);
+        		
+        		MainStage mainForm = new MainStage(response);
         		primaryStage.close();
         		mainForm.start(new Stage());
         	}
@@ -82,7 +83,7 @@ public class Login extends Application {
     }
 
     private void openRegisterForm() {
-        RegistrationForm registerForm = new RegistrationForm();
+        RegistrationStage registerForm = new RegistrationStage();
         registerForm.show();
     }
 

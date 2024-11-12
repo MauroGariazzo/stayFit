@@ -39,8 +39,7 @@ public class RegistrationUserDAO implements IRegistrationUserDAO{
 			pstmt.setInt(11, registrationRequestDTO.userCredentials_fk);
 			
 			pstmt.execute();
-			
-			
+						
 			try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
 	            if (generatedKeys.next()) {
 	                int generatedId = generatedKeys.getInt(1);	                

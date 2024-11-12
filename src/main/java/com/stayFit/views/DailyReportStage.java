@@ -20,9 +20,10 @@ import com.stayFit.utils.PortionListener;
 import com.stayFit.enums.MealType;
 import com.stayFit.meal.*;
 import com.stayFit.portion.*;
+import com.stayFit.registration.ResponseUserDTO;
 import com.stayFit.repository.DBConnector;
 
-public class DailyReport implements PortionListener {
+public class DailyReportStage implements PortionListener {
 
 	private final int MAX_CALORIES;
 	private final int MAX_PROTEINS;
@@ -60,18 +61,19 @@ public class DailyReport implements PortionListener {
 	private PortionController portionController;
 	private PortionCreateRequestDTO pcrDTO;
 
-	private StackPane mainContent; // Changed from VBox to StackPane
-	// private List<PortionCreateRequestDTO>portions;
+	private StackPane mainContent;
 	private ListView<PortionGetResponseDTO> listViewPortions;
-
-	public DailyReport(final int MAX_CALORIES, final int MAX_PROTEINS, final int MAX_FATS, final int MAX_CARBS,
-			LocalDate startingDate) {
+	private ResponseUserDTO userDTO;
+	
+	public DailyReportStage(final ResponseUserDTO userDTO, final int MAX_CALORIES, final int MAX_PROTEINS, final int MAX_FATS, 
+			final int MAX_CARBS, LocalDate startingDate) {
+		this.userDTO = userDTO;
 		this.MAX_CALORIES = MAX_CALORIES;
 		this.MAX_PROTEINS = MAX_PROTEINS;
 		this.MAX_FATS = MAX_FATS;
 		this.MAX_CARBS = MAX_CARBS;
 		this.startingDate = startingDate;
-		this.currentYearMonth = YearMonth.now(); // Set the current month on startup
+		this.currentYearMonth = YearMonth.now();
 		// this.portions = new ArrayList<>();
 		listViewPortions = new ListView<>();
 		/*---------------------------------------------------------------*/
@@ -95,7 +97,9 @@ public class DailyReport implements PortionListener {
 		caloriesProgressBar = new ProgressBar();		
 		proteinProgressBar = new ProgressBar();		
 		fatProgressBar = new ProgressBar();		
-		carbProgressBar = new ProgressBar();				
+		carbProgressBar = new ProgressBar();
+		
+		
 	}
 
 	@Override
@@ -105,10 +109,10 @@ public class DailyReport implements PortionListener {
 			listViewPortions.getItems().clear(); // Pulisci la listview
 			meal.mealType = MealType.valueOf(mealType.toUpperCase());
 			meal.mealUpdateDate = selectedDate;
-			meal.fk_user = 1; // id temporaneo
+			meal.fk_user = userDTO.id; // id temporaneo
 			try {
 				MealGetRequestDTO mgrDTO = new MealGetRequestDTO(selectedDate, MealType.valueOf(mealType.toUpperCase()),
-						1); // fk_user da ottenere
+						meal.fk_user); // fk_user da ottenere
 				// Controllo se il pasto esiste già
 				int id = mc.getExistingMeal(mgrDTO);
 				// Non esiste e lo creo
@@ -143,7 +147,6 @@ public class DailyReport implements PortionListener {
 		VBox topContentBox = new VBox(20);
 		topContentBox.setAlignment(Pos.TOP_LEFT);
 
-		// Add the top sections
 		topContentBox.getChildren().addAll(createNavigationBar(), createCalendarView(), createCaloriesOverview());
 
 		VBox mealsBox = new VBox(20);
@@ -180,7 +183,6 @@ public class DailyReport implements PortionListener {
 		listContainer.setStyle(
 				"-fx-background-color: #FFFFFF; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 5;");
 
-		// Imposta il CellFactory per personalizzare la visualizzazione di ogni elemento
 		listViewPortions
 				.setCellFactory(new Callback<ListView<PortionGetResponseDTO>, ListCell<PortionGetResponseDTO>>() {
 					@Override
@@ -199,7 +201,6 @@ public class DailyReport implements PortionListener {
 							private Label saltLabel;
 							private Button deleteButton;
 							private Region spacer;
-
 							{
 								nameLabel = new Label();
 								nameLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
@@ -213,12 +214,11 @@ public class DailyReport implements PortionListener {
 								detailsBox.getChildren().addAll(nameLabel, caloriesLabel, proteinsLabel, fatsLabel,
 										carbsLabel, sugarsLabel, saltLabel);
 
-								deleteButton = new Button("-");
-
+								deleteButton = new Button("-");								
 								deleteButton.setOnAction(event -> {
 									PortionGetResponseDTO selectedItem = getItem();
 									try {
-										if (areUSure()) {
+										if (userConfirmation()) {
 											PortionController portionControllerDelete = new PortionController(
 													new PortionDeleteUseCase(new PortionDAO(new DBConnector())));
 											portionControllerDelete.delete(selectedItem.id);
@@ -231,8 +231,6 @@ public class DailyReport implements PortionListener {
 
 								spacer = new Region();
 								HBox.setHgrow(spacer, Priority.ALWAYS);
-
-								// content = new HBox(10, imageView, detailsBox, spacer, addButton);
 								content = new HBox(10, detailsBox, spacer, deleteButton);
 								content.setAlignment(Pos.CENTER_LEFT);
 							}
@@ -340,19 +338,13 @@ public class DailyReport implements PortionListener {
 			calendarGrid.add(dayName, i, 0);
 		}
 
-		// Get the first day of the current month
 		LocalDate firstOfMonth = currentYearMonth.atDay(1);
-		// Calculate the day of the week of the first day of the month (Mon = 1, Sun =
-		// 7)
 		int firstDayOfWeek = firstOfMonth.getDayOfWeek().getValue();
-
-		// Number of days in the current month
 		int daysInMonth = currentYearMonth.lengthOfMonth();
 
-		// Populate the calendar with days
 		int row = 1;
-		int col = firstDayOfWeek - 1; // Java DayOfWeek starts from 1 (Monday)
-		// Dentro il metodo createCalendarOverview
+		int col = firstDayOfWeek - 1;
+
 		for (int day = 1; day <= daysInMonth; day++) {
 			LocalDate currentDate = currentYearMonth.atDay(day);
 			Button dayButton = new Button(String.valueOf(day));
@@ -367,7 +359,7 @@ public class DailyReport implements PortionListener {
 				if (currentDate.equals(today) && currentYearMonth.equals(YearMonth.from(today))) {
 					dayButton.setStyle("-fx-background-color: #76ff03; -fx-text-fill: white; -fx-font-weight: bold;");
 					selectedDayButton = dayButton;
-					selectedDate = currentDate; // Imposta la data selezionata iniziale su oggi
+					selectedDate = currentDate; // Impostare la data selezionata iniziale su oggi
 					updateDailyReport();
 				}
 
@@ -407,12 +399,12 @@ public class DailyReport implements PortionListener {
 	}
 
 	private boolean isDayEnabled(LocalDate date, LocalDate today) {
-		// Disable days before startingDate
+		// Disabilitare i giorni prima dell'inizio della dieta
 		if (date.isBefore(startingDate)) {
 			return false;
 		}
 
-		// Disable days after today
+		// Disabilitare i giorni successivi all'inizio della dieta
 		if (date.isAfter(today)) {
 			return false;
 		}
@@ -421,44 +413,41 @@ public class DailyReport implements PortionListener {
 	}
 
 	private VBox createCaloriesOverview() {
-		// Section title
 		Label title = new Label("Panoramica Nutrizionale");
 		title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
 
-		// Calories progress bar
+		// Calorie progress bar
 		caloriesProgressBar = new ProgressBar(0);
 		caloriesProgressBar.setPrefWidth(300);
 		caloriesProgressBar.setMinHeight(20);
 		caloriesProgressBar.setStyle("-fx-accent: #76ff03;"); // Initial green color
 		caloriesLabel.setStyle("-fx-font-size: 14px;");
 
-		// Protein progress bar
+		// Proteine progress bar
 		proteinProgressBar = new ProgressBar(0);
 		proteinProgressBar.setPrefWidth(100);
 		proteinProgressBar.setMinHeight(10);
 		proteinProgressBar.setStyle("-fx-accent: #76ff03;");
 		proteinLabel.setStyle("-fx-font-size: 12px;");
 
-		// Fat progress bar
+		// Grassi progress bar
 		fatProgressBar = new ProgressBar(0);
 		fatProgressBar.setPrefWidth(100);
 		fatProgressBar.setMinHeight(10);
 		fatProgressBar.setStyle("-fx-accent: #76ff03;");
 		fatLabel.setStyle("-fx-font-size: 12px;");
 
-		// Carb progress bar
+		// Carboidrati progress bar
 		carbProgressBar = new ProgressBar(0);
 		carbProgressBar.setPrefWidth(100);
 		carbProgressBar.setMinHeight(10);
 		carbProgressBar.setStyle("-fx-accent: #76ff03;");
 		carbLabel.setStyle("-fx-font-size: 12px;");
 		
-		// Layout for calorie bars
 		VBox calorieBox = new VBox(10);
 		calorieBox.setAlignment(Pos.CENTER);
 		calorieBox.getChildren().addAll(title, caloriesProgressBar, caloriesLabel);
 
-		// Layout for protein, fat, and carb bars
 		HBox macrosBox = new HBox(20);
 		macrosBox.setAlignment(Pos.CENTER);
 		macrosBox.getChildren().addAll(createMacroProgressBox("Proteine", proteinProgressBar, proteinLabel),
@@ -467,7 +456,14 @@ public class DailyReport implements PortionListener {
 
 		calorieBox.getChildren().add(macrosBox);
 
-		// Style for calorieBox
+		Button endDayButton = new Button("Termina Giornata");
+	    endDayButton.setStyle("-fx-background-color: red; -fx-text-fill: white; -fx-font-size: 16px; -fx-padding: 10px 20px;");
+	    
+	    endDayButton.setOnAction(e -> {	        
+	        //terminateDay();
+	    });
+	    
+	    calorieBox.getChildren().add(endDayButton);
 		calorieBox.setStyle("-fx-padding: 10; -fx-border-color: #cccccc; -fx-border-radius: 10; "
 				+ "-fx-background-radius: 10; -fx-background-color: #f9f9f9;");
 
@@ -559,7 +555,7 @@ public class DailyReport implements PortionListener {
 		addButton.setMinSize(30, 30);
 
 		addButton.setOnMouseClicked(event -> {
-			AddFoodForMeal addFoodForMeal = new AddFoodForMeal(mealName, this, this::updateDailyReport);
+			AddFoodForMealStage addFoodForMeal = new AddFoodForMealStage(mealName, this, this::updateDailyReport);
 			Node foodForm = addFoodForMeal.searchFoodForm();
 			VBox overlayPane = new VBox();
 			overlayPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);");
@@ -602,8 +598,8 @@ public class DailyReport implements PortionListener {
 			return;
 		}
 
-		PortionGetRequestDTO pgrDTO = new PortionGetRequestDTO(MealType.valueOf(mealName.toUpperCase()), selectedDate,
-				1);
+		PortionGetRequestDTO pgrDTO = new PortionGetRequestDTO(MealType.valueOf(mealName.toUpperCase()), selectedDate, 
+				userDTO.id);
 		try {
 			List<PortionGetResponseDTO> portionsDTO = portionController.getPortionsDTO(pgrDTO);
 			// Esegui l'aggiornamento dell'interfaccia grafica sul thread JavaFX
@@ -625,7 +621,7 @@ public class DailyReport implements PortionListener {
 		alert.showAndWait();
 	}
 
-	public boolean areUSure() {
+	public boolean userConfirmation() {
 		Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
 		alert.setTitle("Conferma");
 		alert.setHeaderText("Azione Richiesta");
@@ -650,18 +646,4 @@ public class DailyReport implements PortionListener {
 		}
 		return false;
 	}
-
-	/*
-	 * public void updateCalories(int additionalCalories) { totalCalories +=
-	 * additionalCalories; caloriesLabel.setText("Calorie Assunte: " + totalCalories
-	 * + " / " + MAX_CALORIES);
-	 * 
-	 * // Calculate progress double progress = (double) totalCalories /
-	 * MAX_CALORIES; caloriesProgressBar.setProgress(progress > 1.0 ? 1.0 :
-	 * progress);
-	 * 
-	 * // Beyond the established limit if (totalCalories > MAX_CALORIES) {
-	 * caloriesProgressBar.setStyle("-fx-accent: red;"); } else {
-	 * caloriesProgressBar.setStyle("-fx-accent: #76ff03;"); // Green } }
-	 */
 }

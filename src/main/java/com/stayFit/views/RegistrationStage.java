@@ -2,11 +2,9 @@ package com.stayFit.views;
 
 import com.stayFit.registration.RegistrationUserCredentialsController;
 import com.stayFit.enums.IsNewOrUpdate;
-import com.stayFit.models.UserCredentials;
 import com.stayFit.registration.RegistrationUserCredentialsCreateUseCase;
 import com.stayFit.registration.RegistrationUserCredentialsDAO;
 import com.stayFit.registration.RequestCreateUserCredentialsDTO;
-import com.stayFit.registration.RequestCreateUserDTO;
 import com.stayFit.registration.ResponseUserCredentialsDTO;
 import com.stayFit.repository.DBConnector;
 
@@ -21,7 +19,7 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class RegistrationForm {
+public class RegistrationStage {
 
     public void show() {
         Stage registerStage = new Stage();
@@ -51,7 +49,7 @@ public class RegistrationForm {
         	try{ 
         		ResponseUserCredentialsDTO response = createUserCredentials(newUsernameField, newPasswordField, 
         				newEmailField);
-        		PersonalDataForm personalDataForm = new PersonalDataForm(response.id, IsNewOrUpdate.NEW);
+        		PersonalDataStage personalDataForm = new PersonalDataStage(response.id, IsNewOrUpdate.NEW);
             	registerStage.close();
             	personalDataForm.show();            	
         	}

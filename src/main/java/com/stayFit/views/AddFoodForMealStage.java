@@ -37,7 +37,7 @@ import com.stayFit.product.ProductCreateUseCase;
 import com.stayFit.product.ProductGetUseCase;
 import com.stayFit.repository.DBConnector;
 
-public class AddFoodForMeal {
+public class AddFoodForMealStage {
 
 	/*private final int MAX_CALORIES;
 	private final int MAX_PROTEINS;
@@ -52,7 +52,7 @@ public class AddFoodForMeal {
 	private PortionListener listener;
 	private Runnable updateDailyReport;
 	
-	public AddFoodForMeal(String mealType, PortionListener listener, Runnable updateDailyReport) {
+	public AddFoodForMealStage(String mealType, PortionListener listener, Runnable updateDailyReport) {
 		this.mealType = mealType;
 		this.grammage = 0;
 		this.portions = new ArrayList<>();

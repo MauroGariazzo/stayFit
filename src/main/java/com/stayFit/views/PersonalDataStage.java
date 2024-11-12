@@ -12,6 +12,10 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.time.LocalDate;
 
+import com.stayFit.diet.DietDAO;
+import com.stayFit.diet.CreateDietUseCase;
+import com.stayFit.diet.DietController;
+import com.stayFit.diet.UserInfoDTO;
 import com.stayFit.enums.FitnessState;
 import com.stayFit.enums.Gender;
 import com.stayFit.enums.Goal;
@@ -23,11 +27,11 @@ import com.stayFit.registration.RequestCreateUserDTO;
 import com.stayFit.registration.ResponseUserDTO;
 import com.stayFit.repository.DBConnector;
 
-public class PersonalDataForm {
+public class PersonalDataStage {
 	private IsNewOrUpdate isNewOrUpdate;
 	private int idUser;
 
-	public PersonalDataForm(int idUser, IsNewOrUpdate isNewOrUpdate) {
+	public PersonalDataStage(int idUser, IsNewOrUpdate isNewOrUpdate) {
 		this.idUser = idUser;
 		System.out.println(idUser);
 		this.isNewOrUpdate = isNewOrUpdate;
@@ -116,9 +120,16 @@ public class PersonalDataForm {
 						Gender.valueOf(genderComboBox.getValue().toUpperCase()),
 						Goal.valueOf(goalComboBox.getValue().toUpperCase().replace(" ", "_")), LocalDate.now(), idUser);
 
-				userDTO.BMI = registrationUserController.getBMI(userDTO.height, userDTO.weight);
+				userDTO.BMI = registrationUserController.getBMI(userDTO.height, userDTO.weight);				
 				ResponseUserDTO response = registrationUserController.insert(userDTO);
-				MainForm mainForm = new MainForm(response);
+				
+				// UserInfo per il calcolo della dieta
+				UserInfoDTO userInfo = new UserInfoDTO(userDTO.gender, userDTO.goal, userDTO.fitnessState, userDTO.birthday, 
+						userDTO.height, userDTO.weight, userDTO.userCredentials_fk);
+				DietController dietController = new DietController(new CreateDietUseCase(new DietDAO(new DBConnector())));
+				dietController.create(userInfo);
+				
+				MainStage mainForm = new MainStage(response);
 				personalDataStage.close();
 				Stage mainStage = new Stage();
 	            mainForm.start(mainStage);
