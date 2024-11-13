@@ -14,6 +14,7 @@ public class Meal {
 	private double carbs;
 	private double sugars;
 	private double salt;
+	private boolean isTerminated;
 		
 	public Meal(int id, LocalDate date, MealType mealType, int fkUser) {
 		this.id = id;
@@ -22,9 +23,9 @@ public class Meal {
 		this.fkUser = fkUser;
 	}
 	
-	public Meal(LocalDate date, int fkUser, double calories, double proteins, double fats,
+	public Meal(int id, LocalDate date, int fkUser, double calories, double proteins, double fats,
 			double carbs, double sugars, double salt) {
-		//this.id = id;
+		this.id = id;
 		this.date = date;
 		//this.mealType = mealType;
 		this.fkUser = fkUser;
@@ -114,6 +115,14 @@ public class Meal {
 
 	public void setSalt(double salt) {
 		this.salt = salt;
+	}
+	
+	public boolean getIsTerminated() {
+		return isTerminated;
+	}
+
+	public void setIsTerminated(boolean isTerminated) {
+		this.isTerminated = isTerminated;
 	}
 
 }

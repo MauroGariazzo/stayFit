@@ -39,13 +39,15 @@ public class MealDAO implements IMealDAO {
 					throw new Exception("Creazione utente fallita, nessun ID ottenuto.");
 				}
 			}
-		} catch (Exception ex) {
+		} 
+		catch (Exception ex) {
 			throw new Exception(ex.getMessage());
 		}
 		return generatedId;
 	}
 
-	public List<Meal> getExistingMeals(MealGetRequestDTO mealGetRequestDTO) throws Exception{
+	// Per verificare che quel pasto sia già stato inserito. Nel caso verranno sommati i valori nutrizionali
+	public List<Meal> getExistingMeals(MealGetRequestDTO mealGetRequestDTO) throws Exception{		
 		String query = "SELECT * FROM stayFit.meal WHERE mealType = ? AND mealUpdateDate = ? AND fk_user = ?";
 		List<Meal>meals = new ArrayList<>();
 		try (PreparedStatement pstmt = dbConnector.getConnection().prepareStatement(query)) {
@@ -55,9 +57,8 @@ public class MealDAO implements IMealDAO {
 			try(ResultSet rs = pstmt.executeQuery()){
 				
 				while(rs.next()) {	
-					//int id, LocalDate date, MealType mealType, int fkUser
-					Meal meal = new Meal(rs.getInt("id"), mealGetRequestDTO.mealUpdateDate, mealGetRequestDTO.mealType, 
-							mealGetRequestDTO.fk_user);
+					Meal meal = new Meal(rs.getInt("id"), mealGetRequestDTO.mealUpdateDate, 
+							mealGetRequestDTO.mealType, mealGetRequestDTO.fk_user);
 					meals.add(meal);
 				}
 			}
@@ -70,12 +71,13 @@ public class MealDAO implements IMealDAO {
 	}
 	
 	public List<Meal> getDailyNutritionalValues(MealGetRequestDTO mealGetRequestDTO) throws Exception{
-		String query = "SELECT m.mealUpdateDate, SUM(p.proteins) AS proteins, SUM(p.carbs) AS carbs, "
+		String query = "SELECT m.id, m.mealUpdateDate, m.isTerminated, SUM(p.proteins) AS proteins, SUM(p.carbs) AS carbs, "
 				+ "SUM(p.fats) AS fats, SUM(p.calories) AS calories, SUM(p.sugars) AS sugars, SUM(p.salt) AS salt "
-				+ "FROM meal m "
+				+ "FROM stayFit.meal m "
 				+ "JOIN portion p "
 				+ "ON m.id = p.meal_fk "
-				+ "WHERE m.mealUpdateDate = ? AND fk_user = ? ";
+				+ "WHERE m.mealUpdateDate = ? AND fk_user = ? "
+				+ "GROUP BY m.id, m.mealUpdateDate;";
 		
 		List<Meal>meals = new ArrayList<>();
 		try (PreparedStatement pstmt = dbConnector.getConnection().prepareStatement(query)) {
@@ -83,12 +85,11 @@ public class MealDAO implements IMealDAO {
 			pstmt.setInt(2, mealGetRequestDTO.fk_user);
 			try(ResultSet rs = pstmt.executeQuery()){
 				
-				while(rs.next()) {	
-					//int id, LocalDate date, int fkUser, double calories, double proteins, double fats,
-					//double carbs, double sugars, double salt
-					Meal meal = new Meal(mealGetRequestDTO.mealUpdateDate, mealGetRequestDTO.fk_user,
+				while(rs.next()) {
+					Meal meal = new Meal(rs.getInt("id"), mealGetRequestDTO.mealUpdateDate, mealGetRequestDTO.fk_user,
 							rs.getDouble("calories"), rs.getDouble("proteins"), rs.getDouble("fats"), rs.getDouble("carbs"),
 							rs.getDouble("sugars"), rs.getDouble("salt"));
+					meal.setIsTerminated(rs.getBoolean("isTerminated"));
 					meals.add(meal);
 				}
 			}
@@ -100,5 +101,17 @@ public class MealDAO implements IMealDAO {
 		return meals;
 	}
 	
+	public void terminateDay(LocalDate date) throws Exception{
+		String query = "UPDATE stayFit.meal SET isTerminated = ? WHERE mealUpdateDate = ?";
+		
+		try (PreparedStatement pstmt = dbConnector.getPreparedStatementObj(query)) {
+			pstmt.setInt(1, 1);
+			pstmt.setDate(2, Date.valueOf(date));			
 
+			pstmt.execute();
+		} 
+		catch (Exception ex) {
+			throw new Exception(ex.getMessage());
+		}
+	}	
 }

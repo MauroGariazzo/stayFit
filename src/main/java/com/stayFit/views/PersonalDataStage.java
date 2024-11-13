@@ -12,14 +12,20 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.time.LocalDate;
 
-import com.stayFit.diet.DietDAO;
-import com.stayFit.diet.CreateDietUseCase;
-import com.stayFit.diet.DietController;
-import com.stayFit.diet.UserInfoDTO;
+import com.stayFit.dailyNutrition.DailyNutritionCreateUseCase;
+import com.stayFit.dailyNutrition.DailyNutritionResponseCreateDTO;
+import com.stayFit.dailyNutrition.DailyNutritionController;
+import com.stayFit.dailyNutrition.DailyNutritionDAO;
+import com.stayFit.dailyNutrition.UserInfoDTO;
 import com.stayFit.enums.FitnessState;
 import com.stayFit.enums.Gender;
 import com.stayFit.enums.Goal;
 import com.stayFit.enums.IsNewOrUpdate;
+import com.stayFit.mealNutrition.DailyNutritionDTO;
+import com.stayFit.mealNutrition.MealNutritionController;
+import com.stayFit.mealNutrition.MealNutritionCreateUseCase;
+import com.stayFit.mealNutrition.MealNutritionDAO;
+import com.stayFit.models.DailyNutrition;
 import com.stayFit.registration.RegistrationUserController;
 import com.stayFit.registration.RegistrationUserCreateUseCase;
 import com.stayFit.registration.RegistrationUserDAO;
@@ -126,8 +132,13 @@ public class PersonalDataStage {
 				// UserInfo per il calcolo della dieta
 				UserInfoDTO userInfo = new UserInfoDTO(userDTO.gender, userDTO.goal, userDTO.fitnessState, userDTO.birthday, 
 						userDTO.height, userDTO.weight, userDTO.userCredentials_fk);
-				DietController dietController = new DietController(new CreateDietUseCase(new DietDAO(new DBConnector())));
-				dietController.create(userInfo);
+				DailyNutritionController dailyNutritionController = new DailyNutritionController(new DailyNutritionCreateUseCase
+						(new DailyNutritionDAO(new DBConnector())));
+				
+				DailyNutritionResponseCreateDTO dailyNutrition = dailyNutritionController.create(userInfo);
+				MealNutritionController mealController = new MealNutritionController(new MealNutritionCreateUseCase
+						(new MealNutritionDAO(new DBConnector())));
+				mealController.create(dailyNutrition);
 				
 				MainStage mainForm = new MainStage(response);
 				personalDataStage.close();

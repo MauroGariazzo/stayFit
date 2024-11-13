@@ -16,4 +16,5 @@ public class MealGetResponseDTO {
 	public double carbs;
 	public double sugars;
 	public double salt;
+	public boolean isTerminated;
 }

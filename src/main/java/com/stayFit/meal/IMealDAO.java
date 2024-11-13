@@ -2,8 +2,6 @@ package com.stayFit.meal;
 
 import java.time.LocalDate;
 import java.util.List;
-
-import com.stayFit.enums.MealType;
 import com.stayFit.models.Meal;
 
 public interface IMealDAO {
@@ -13,4 +11,5 @@ public interface IMealDAO {
 	//public Meal get() throws Exception;
 	public List<Meal> getExistingMeals(MealGetRequestDTO mealGetRequestDTO) throws Exception;
 	public List<Meal> getDailyNutritionalValues(MealGetRequestDTO mealGetRequestDTO) throws Exception;
+	public void terminateDay(LocalDate date) throws Exception;
 }
