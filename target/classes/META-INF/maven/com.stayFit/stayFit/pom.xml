@@ -41,5 +41,10 @@
 		</dependency>
 
 
+		<dependency>
+			<groupId>com.example</groupId>
+			<artifactId>callCenterScraper</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
 	</dependencies>	
 </project>

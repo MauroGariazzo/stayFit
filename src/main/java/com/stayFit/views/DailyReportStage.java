@@ -5,7 +5,8 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -73,11 +74,10 @@ public class DailyReportStage implements PortionListener {
 	private DailyNutritionResponseGetDTO response;
 	private MealNutritionController mealNutritionController;
 	private Button endDayButton;
-
-	String calories;
-	String proteins;
-	String carbs;
-	String fats;
+	
+	private BooleanProperty isDayTerminated = new SimpleBooleanProperty(false);
+	private List<PortionGetResponseDTO> portionsDTO;
+	private VBox mealsBox = new VBox(20);
 
 	public DailyReportStage(final ResponseUserDTO userDTO, final int MAX_CALORIES, final int MAX_PROTEINS,
 			final int MAX_FATS, final int MAX_CARBS, LocalDate startingDate, DailyNutritionResponseGetDTO response) {
@@ -116,6 +116,8 @@ public class DailyReportStage implements PortionListener {
 		this.mealNutritionController = new MealNutritionController(
 				new MealNutritionGetUseCase(new MealNutritionDAO(new DBConnector())));
 		this.response = response;
+		this.portionsDTO = new ArrayList<>();
+		//VBox mealsBox = new VBox(20);
 	}
 
 	@Override
@@ -124,7 +126,7 @@ public class DailyReportStage implements PortionListener {
 			listViewPortions.getItems().clear(); // Pulisci la listview
 			meal.mealType = MealType.valueOf(mealType.toUpperCase());
 			meal.mealUpdateDate = selectedDate;
-			meal.fk_user = userDTO.id; // id temporaneo
+			meal.fk_user = userDTO.id;
 			try {
 				MealGetRequestDTO mgrDTO = new MealGetRequestDTO(selectedDate, MealType.valueOf(mealType.toUpperCase()),
 						meal.fk_user); // fk_user da ottenere
@@ -135,7 +137,7 @@ public class DailyReportStage implements PortionListener {
 					id = mc.getNewMeal(meal);
 				}
 
-				// Creo la porzione
+				// Inserisco la porzione sul DB
 				List<PortionCreateRequestDTO> portionsCreateRequestDTO = new ArrayList<>();
 				for (PortionGetResponseDTO portion : portionsResponseDTO) {
 
@@ -150,100 +152,114 @@ public class DailyReportStage implements PortionListener {
 				System.out.println(ex.getMessage());
 			}
 		}
-
 	}
+		
 
 	public StackPane getDailyReportView() {
-		mainContent = new StackPane();
-		mainContent.setPadding(new Insets(20, 20, 20, 20));
-		mainContent.setAlignment(Pos.TOP_CENTER);
+	    mainContent = new StackPane();
+	    mainContent.setPadding(new Insets(20, 20, 20, 20));
+	    mainContent.setAlignment(Pos.TOP_CENTER);
 
-		VBox topContentBox = new VBox(20);
-		topContentBox.setAlignment(Pos.TOP_LEFT);
+	    VBox topContentBox = new VBox(20);
+	    topContentBox.setAlignment(Pos.TOP_LEFT);
+	    topContentBox.getChildren().addAll(createNavigationBar(), createCalendarView(), createCaloriesOverview());
 
-		topContentBox.getChildren().addAll(createNavigationBar(), createCalendarView(), createCaloriesOverview());
+	    mealsBox = createMealsSection(); // Assegna a mealsBox
 
-		VBox mealsBox = new VBox(20);
-		mealsBox.setAlignment(Pos.TOP_LEFT);
+	    Node tableView = createListView();
+
+	    HBox mainBody = new HBox(20);
+	    mainBody.setAlignment(Pos.TOP_LEFT);
+	    mainBody.getChildren().addAll(mealsBox, tableView);
+	    mainBody.widthProperty().addListener((obs, oldVal, newVal) -> {
+	        double halfWidth = newVal.doubleValue() / 2 - 10;
+	        mealsBox.setPrefWidth(halfWidth);
+	        if (tableView instanceof Region) {
+	            ((Region) tableView).setPrefWidth(halfWidth);
+	        }
+	    });
+
+	    VBox contentBox = new VBox(20);
+	    contentBox.setAlignment(Pos.TOP_LEFT);
+	    contentBox.getChildren().addAll(topContentBox, mainBody);
+
+	    mainContent.getChildren().add(contentBox);
+	    return mainContent;
+	}
+	
+
+	private VBox createMealsSection() {
+	    VBox newMealsBox = new VBox(20);
+	    newMealsBox.setAlignment(Pos.TOP_LEFT);
+	    try {
+	        PortionGetResponseDTO portionBreakFast = loadPortions(MealType.COLAZIONE);
+	        PortionGetResponseDTO portionLunch = loadPortions(MealType.PRANZO);
+	        PortionGetResponseDTO portionDinner = loadPortions(MealType.CENA);
+	        PortionGetResponseDTO portionSnacks = loadPortions(MealType.SPUNTINO);
+
+	        newMealsBox.getChildren().addAll(
+	            createMealItem("COLAZIONE",
+	                "Calorie: " + portionBreakFast.calories + "/" + mealNutritionController.get(response.id, MealType.COLAZIONE).calories + " kcal",
+	                "Proteine: " + portionBreakFast.proteins + "/" + mealNutritionController.get(response.id, MealType.COLAZIONE).proteins + " gr",
+	                "Carboidrati: " + portionBreakFast.carbs + "/" + mealNutritionController.get(response.id, MealType.COLAZIONE).carbs + " gr",
+	                "Grassi: " + portionBreakFast.fats + "/" + mealNutritionController.get(response.id, MealType.COLAZIONE).fats + " gr",
+	                "/icons/coffee.png", newMealsBox),
+
+	            createMealItem("PRANZO",
+	                "Calorie: " + portionLunch.calories + "/" + mealNutritionController.get(response.id, MealType.PRANZO).calories + " kcal",
+	                "Proteine: " + portionLunch.proteins + "/" + mealNutritionController.get(response.id, MealType.PRANZO).proteins + " gr",
+	                "Carboidrati: " + portionLunch.carbs + "/" +  mealNutritionController.get(response.id, MealType.PRANZO).carbs + " gr",
+	                "Grassi: " + portionLunch.fats + "/" +  mealNutritionController.get(response.id, MealType.PRANZO).fats + " gr",
+	                "/icons/lunch.png", newMealsBox),
+
+	            createMealItem("CENA",
+	                "Calorie: " + portionDinner.calories + "/" + mealNutritionController.get(response.id, MealType.CENA).calories + " kcal",
+	                "Proteine: " + portionDinner.proteins + "/" + mealNutritionController.get(response.id, MealType.CENA).proteins + " gr",
+	                "Carboidrati: " + portionDinner.carbs + "/" + mealNutritionController.get(response.id, MealType.CENA).carbs + " gr",
+	                "Grassi: " + portionDinner.fats + "/" + mealNutritionController.get(response.id, MealType.CENA).fats + " gr",
+	                "/icons/meat.png", newMealsBox),
+
+	            createMealItem("SPUNTINI",
+	                "Calorie: " + portionSnacks.calories + "/" + mealNutritionController.get(response.id, MealType.SPUNTINO).calories + " kcal",
+	                "Proteine: " + portionSnacks.proteins + "/" + mealNutritionController.get(response.id, MealType.SPUNTINO).proteins + " gr",
+	                "Carboidrati: " + portionSnacks.carbs + "/" + mealNutritionController.get(response.id, MealType.SPUNTINO).carbs + " gr",
+	                "Grassi: " + portionSnacks.fats + "/" + mealNutritionController.get(response.id, MealType.SPUNTINO).fats + " gr",
+	                "/icons/snack.png", newMealsBox)
+	        );
+	    } 
+	    catch (Exception ex) {
+	        System.out.println(ex.getMessage());
+	    }
+	    return newMealsBox;
+	}
+
+
+	private void updateMealsSection() {
+		mealsBox.getChildren().clear();
+	    
+	    // Crea una nuova sezione pasti
+	    VBox newMealsSection = createMealsSection();
+	    
+	    // Aggiungi i nuovi figli a mealsBox
+	    mealsBox.getChildren().addAll(newMealsSection.getChildren());
+	}
+	
+	private PortionGetResponseDTO loadPortions(MealType mealType) {
+		PortionGetRequestDTO pgrDTO = new PortionGetRequestDTO(mealType,selectedDate, userDTO.id);
+		PortionGetResponseDTO portionDTO = new PortionGetResponseDTO(); 
 		try {
-			mealsBox.getChildren().addAll(createMealItem("COLAZIONE",
-					"Calorie: " + String.valueOf(mealNutritionController.get(response.id, MealType.COLAZIONE).calories)
-							+ " kcal",
-					"Proteine: " + String.valueOf(mealNutritionController.get(response.id, MealType.COLAZIONE).proteins)
-							+ " gr",
-					"Carboidrati: " + String.valueOf(mealNutritionController.get(response.id, MealType.COLAZIONE).carbs)
-							+ " gr",
-					"Grassi: " + String.valueOf(mealNutritionController.get(response.id, MealType.COLAZIONE).fats)
-							+ " gr",
-					"/icons/coffee.png", mealsBox),
-
-					createMealItem("PRANZO",
-							"Calorie: "
-									+ String.valueOf(mealNutritionController.get(response.id, MealType.PRANZO).calories)
-									+ " kcal",
-							"Proteine: "
-									+ String.valueOf(mealNutritionController.get(response.id, MealType.PRANZO).proteins)
-									+ " gr",
-							"Carboidrati: "
-									+ String.valueOf(mealNutritionController.get(response.id, MealType.PRANZO).carbs)
-									+ " gr",
-							"Grassi: " + String.valueOf(mealNutritionController.get(response.id, MealType.PRANZO).fats)
-									+ " gr",
-							"/icons/lunch.png", mealsBox),
-
-					createMealItem("CENA",
-							"Calorie: "
-									+ String.valueOf(mealNutritionController.get(response.id, MealType.CENA).calories)
-									+ " kcal",
-							"Proteine: "
-									+ String.valueOf(mealNutritionController.get(response.id, MealType.CENA).proteins)
-									+ " gr",
-							"Carboidrati: "
-									+ String.valueOf(mealNutritionController.get(response.id, MealType.CENA).carbs)
-									+ " gr",
-							"Grassi: " + String.valueOf(mealNutritionController.get(response.id, MealType.CENA).fats)
-									+ " gr",
-							"/icons/meat.png", mealsBox),
-
-					createMealItem("SPUNTINI",
-							"Calorie: " + String.valueOf(
-									mealNutritionController.get(response.id, MealType.SPUNTINO).calories) + " kcal",
-							"Proteine: "
-									+ String.valueOf(
-											mealNutritionController.get(response.id, MealType.SPUNTINO).proteins)
-									+ " gr",
-							"Carboidrati: "
-									+ String.valueOf(mealNutritionController.get(response.id, MealType.SPUNTINO).carbs)
-									+ " gr",
-							"Grassi: "
-									+ String.valueOf(mealNutritionController.get(response.id, MealType.SPUNTINO).fats)
-									+ " gr",
-							"/icons/snack.png", mealsBox));
-		}
-
-		catch (Exception ex) {
-			System.out.println(ex.getMessage());
-		}
-
-		Node tableView = createListView();
-
-		HBox mainBody = new HBox(20);
-		mainBody.setAlignment(Pos.TOP_LEFT);
-		mainBody.getChildren().addAll(mealsBox, tableView);
-		mainBody.widthProperty().addListener((obs, oldVal, newVal) -> {
-			double halfWidth = newVal.doubleValue() / 2 - 10; // Subtract spacing
-			mealsBox.setPrefWidth(halfWidth);
-			if (tableView instanceof Region) {
-				((Region) tableView).setPrefWidth(halfWidth);
+			portionsDTO = portionController.getPortionsDTO(pgrDTO);		
+			for(PortionGetResponseDTO portion : portionsDTO) {
+				portionDTO.calories += portion.calories;
+				portionDTO.proteins += portion.proteins;
+				portionDTO.carbs += portion.carbs;
+				portionDTO.fats += portion.fats;
 			}
-		});
-
-		VBox contentBox = new VBox(20);
-		contentBox.setAlignment(Pos.TOP_LEFT);
-		contentBox.getChildren().addAll(topContentBox, mainBody);
-
-		mainContent.getChildren().add(contentBox);
-		return mainContent;
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+		}
+		return portionDTO;
 	}
 
 	private HBox createListView() {
@@ -281,9 +297,12 @@ public class DailyReportStage implements PortionListener {
 								detailsBox = new VBox(2);
 								detailsBox.getChildren().addAll(nameLabel, caloriesLabel, proteinsLabel, fatsLabel,
 										carbsLabel, sugarsLabel, saltLabel);
-
+								
+								disableEnableAddButtons();
+								//System.out.println(isDayTerminated);
 								deleteButton = new Button("-");
-								//addButtons.add(deleteButton);
+								deleteButton.disableProperty().bind(isDayTerminated);
+
 								deleteButton.setOnAction(event -> {
 									PortionGetResponseDTO selectedItem = getItem();
 									try {
@@ -317,6 +336,7 @@ public class DailyReportStage implements PortionListener {
 									carbsLabel.setText(String.format("Carboidrati: %.1f g", item.carbs));
 									sugarsLabel.setText(String.format("Zuccheri: %.1f g", item.sugars));
 									saltLabel.setText(String.format("Sale: %.1f g", item.salt));
+									deleteButton.disableProperty().bind(isDayTerminated);
 									setGraphic(content);
 								}
 							}
@@ -432,16 +452,18 @@ public class DailyReportStage implements PortionListener {
 				}
 
 				dayButton.setOnAction(e -> {
-					if (selectedDayButton != null) {
-						listViewPortions.getItems().clear();
-						selectedDayButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
-					}
+				    if (selectedDayButton != null) {
+				        listViewPortions.getItems().clear();
+				        selectedDayButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
+				        selectedDate = currentDate;
+				        updateMealsSection(); // Chiama updateMealsSection() per aggiornare la sezione pasti
+				    }
 
-					dayButton.setStyle("-fx-background-color: #76ff03; -fx-text-fill: white; -fx-font-weight: bold;");
-					selectedDayButton = dayButton;
-					selectedDate = currentDate; // Aggiorna la data selezionata
-					updateDailyReport();
-					disableEnableAddButtons();
+				    dayButton.setStyle("-fx-background-color: #76ff03; -fx-text-fill: white; -fx-font-weight: bold;");
+				    selectedDayButton = dayButton;
+				    selectedDate = currentDate; // Aggiorna la data selezionata
+				    updateDailyReport();
+				    disableEnableAddButtons();
 				});
 
 			} else {
@@ -538,6 +560,7 @@ public class DailyReportStage implements PortionListener {
 								new MealUpdateUseCase(new MealDAO(new DBConnector())));
 						mealController.terminateDay(selectedDate);
 						endDayButton.setDisable(true);
+						isDayTerminated.set(true);
 					}
 				}
 			} 
@@ -669,35 +692,37 @@ public class DailyReportStage implements PortionListener {
 	}
 
 	private void disableEnableAddButtons() {
-		List<MealGetResponseDTO> meals = getMeals();
-		if (meals.size() > 0) {
-			if (meals.get(0).isTerminated) {
-				for (Button b : addButtons) {
-					b.setDisable(true);
-					//deleteButton.setDisable(true);
-				}
-				 endDayButton.setDisable(true);
-			}
-			else {
-				for (Button b : addButtons) {
-					b.setDisable(false);
-				}
-				 endDayButton.setDisable(false);
-			}
-		}
-		else {
-			for (Button b : addButtons) {
-				b.setDisable(false);
-			}
-			 endDayButton.setDisable(false);
-		}
-
+	    List<MealGetResponseDTO> meals = getMeals();
+	    if (meals.size() > 0) {
+	        if (meals.get(0).isTerminated) {
+	            for (Button b : addButtons) {
+	                b.setDisable(true);
+	            }
+	            endDayButton.setDisable(true);
+	            isDayTerminated.set(true);
+	        } else {
+	            for (Button b : addButtons) {
+	                b.setDisable(false);
+	            }
+	            endDayButton.setDisable(false);
+	            isDayTerminated.set(false);
+	        }
+	    } else {
+	        for (Button b : addButtons) {
+	            b.setDisable(false);
+	        }
+	        endDayButton.setDisable(false);
+	        isDayTerminated.set(false);
+	    }
+	    listViewPortions.refresh(); // Add this line
 	}
+
+
 
 	private List<MealGetResponseDTO> getMeals() {
 		List<MealGetResponseDTO> meals = new ArrayList<>();
 		try {			
-			MealGetRequestDTO mgrDTO = new MealGetRequestDTO(selectedDate, userDTO.id);
+			MealGetRequestDTO mgrDTO = new MealGetRequestDTO(selectedDate, userDTO.id);			
 			meals = mc.getDailyNutritions(mgrDTO);
 		} catch (Exception ex) {
 			showAlert(ex.getMessage(), Alert.AlertType.WARNING);
@@ -714,6 +739,8 @@ public class DailyReportStage implements PortionListener {
 			showAlert(ex.getMessage(), Alert.AlertType.WARNING);
 		}
 	}
+	
+	
 
 	private void populateListView(String mealName) {
 		if (selectedDate == null) {
@@ -721,10 +748,10 @@ public class DailyReportStage implements PortionListener {
 			return;
 		}
 
-		PortionGetRequestDTO pgrDTO = new PortionGetRequestDTO(MealType.valueOf(mealName.toUpperCase()), selectedDate,
-				userDTO.id);
+		PortionGetRequestDTO pgrDTO = new PortionGetRequestDTO(MealType.valueOf(mealName.toUpperCase()), 
+				selectedDate, userDTO.id);
 		try {
-			List<PortionGetResponseDTO> portionsDTO = portionController.getPortionsDTO(pgrDTO);
+			portionsDTO = portionController.getPortionsDTO(pgrDTO);			
 			// Esegui l'aggiornamento dell'interfaccia grafica sul thread JavaFX
 			Platform.runLater(() -> {
 				listViewPortions.getItems().clear();
@@ -770,3 +797,4 @@ public class DailyReportStage implements PortionListener {
 		return false;
 	}
 }
+
