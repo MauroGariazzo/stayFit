@@ -21,7 +21,7 @@ import com.stayFit.enums.FitnessState;
 import com.stayFit.enums.Gender;
 import com.stayFit.enums.Goal;
 import com.stayFit.enums.IsNewOrUpdate;
-import com.stayFit.mealNutrition.DailyNutritionDTO;
+//import com.stayFit.mealNutrition.DailyNutritionDTO;
 import com.stayFit.mealNutrition.MealNutritionController;
 import com.stayFit.mealNutrition.MealNutritionCreateUseCase;
 import com.stayFit.mealNutrition.MealNutritionDAO;
@@ -34,13 +34,10 @@ import com.stayFit.registration.ResponseUserDTO;
 import com.stayFit.repository.DBConnector;
 
 public class PersonalDataStage {
-	private IsNewOrUpdate isNewOrUpdate;
-	private int idUser;
+	private int idUserCredentials;
 
-	public PersonalDataStage(int idUser, IsNewOrUpdate isNewOrUpdate) {
-		this.idUser = idUser;
-		System.out.println(idUser);
-		this.isNewOrUpdate = isNewOrUpdate;
+	public PersonalDataStage(int idUserCredentials) {
+		this.idUserCredentials = idUserCredentials;
 	}
 
 	private TextField nameField;
@@ -67,40 +64,50 @@ public class PersonalDataStage {
 
 		nameField = new TextField("");
 		nameField.setPromptText("Nome");
-
+		nameField.setMaxWidth(200);
+		
 		surnameField = new TextField("");
 		surnameField.setPromptText("Cognome");
-
+		surnameField.setMaxWidth(200);
+		
 		birthDatePicker = new DatePicker();
 		birthDatePicker.setPromptText("Data di Nascita");
+		birthDatePicker.setMaxWidth(200);
 
 		heightSpinner = new Spinner<>();
 		heightSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(100, 250, 170));
 		heightSpinner.setEditable(false);
+		heightSpinner.setMaxWidth(200);
 
 		weightSpinner = new Spinner<>();
 		weightSpinner.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(30.0, 300.0, 70.0, 1));
 		weightSpinner.setEditable(false);
+		weightSpinner.setMaxWidth(200);
 
 		fitnessStatusComboBox = new ComboBox<>();
 		fitnessStatusComboBox.getItems().addAll("SEDENTARIO", "POCO_ATTIVO", "MEDIAMENTE_ATTIVO", "MOLTO_ATTIVO");
 		fitnessStatusComboBox.setPromptText("Stato Fitness");
 		fitnessStatusComboBox.setValue("SEDENTARIO");
+		fitnessStatusComboBox.setMaxWidth(200);
 
 		genderComboBox = new ComboBox<>();
 		genderComboBox.getItems().addAll("Maschio", "Femmina");
 		genderComboBox.setValue("Maschio");
+		genderComboBox.setMaxWidth(200);
 
 		goalComboBox = new ComboBox<>();
 		goalComboBox.getItems().addAll("Perdere Peso", "Mantenere Peso", "Mettere Massa Muscolare");
 		goalComboBox.setValue("Mantenere Peso");
-
+		goalComboBox.setMaxWidth(200);
+		
 		Button saveButton = new Button("Salva");
 		saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 16px;");
 		saveButton.setOnAction(event -> {
 			try {
-				createOrUpdate(personalDataStage);
-			} catch (Exception ex) {
+				create(personalDataStage);
+				
+			}
+			catch (Exception ex) {
 				ex.printStackTrace();
 				showAlert(ex.getMessage(), Alert.AlertType.WARNING);
 			}
@@ -114,43 +121,39 @@ public class PersonalDataStage {
 		personalDataStage.show();
 	}
 
-	private void createOrUpdate(Stage personalDataStage) throws Exception {
+	private void create(Stage personalDataStage) throws Exception {
 		RegistrationUserController registrationUserController = new RegistrationUserController(
 				new RegistrationUserCreateUseCase(new RegistrationUserDAO(new DBConnector())));
 
-		try {			
-			if (this.isNewOrUpdate.equals(IsNewOrUpdate.NEW)) {
-				RequestCreateUserDTO userDTO = new RequestCreateUserDTO(nameField.getText(), surnameField.getText(),
-						heightSpinner.getValue(), weightSpinner.getValue(), birthDatePicker.getValue(),
-						FitnessState.valueOf(fitnessStatusComboBox.getValue()),
-						Gender.valueOf(genderComboBox.getValue().toUpperCase()),
-						Goal.valueOf(goalComboBox.getValue().toUpperCase().replace(" ", "_")), LocalDate.now(), idUser);
+		try {
+			// Creo la richiesta per la creazione dello user con i suoi dati anagrafici
+			RequestCreateUserDTO userDTO = new RequestCreateUserDTO(nameField.getText(), surnameField.getText(),
+					heightSpinner.getValue(), weightSpinner.getValue(), birthDatePicker.getValue(),
+					FitnessState.valueOf(fitnessStatusComboBox.getValue()),
+					Gender.valueOf(genderComboBox.getValue().toUpperCase()),
+					Goal.valueOf(goalComboBox.getValue().toUpperCase().replace(" ", "_")), LocalDate.now(), idUserCredentials);
+						
+			// Calcolo del suo bmi
+			userDTO.BMI = registrationUserController.getBMI(userDTO.height, userDTO.weight);
+			// Registro le info del cliente
+			ResponseUserDTO response = registrationUserController.insert(userDTO);			
+			// UserInfo per il calcolo della dieta
+			UserInfoDTO userInfo = new UserInfoDTO(response.id, userDTO.gender, userDTO.goal, userDTO.fitnessState, userDTO.birthday,
+					userDTO.height, userDTO.weight, userDTO.userCredentials_fk);
+			DailyNutritionController dailyNutritionController = new DailyNutritionController(
+					new DailyNutritionCreateUseCase(new DailyNutritionDAO(new DBConnector())));
 
-				userDTO.BMI = registrationUserController.getBMI(userDTO.height, userDTO.weight);				
-				ResponseUserDTO response = registrationUserController.insert(userDTO);
-				
-				// UserInfo per il calcolo della dieta
-				UserInfoDTO userInfo = new UserInfoDTO(userDTO.gender, userDTO.goal, userDTO.fitnessState, userDTO.birthday, 
-						userDTO.height, userDTO.weight, userDTO.userCredentials_fk);
-				DailyNutritionController dailyNutritionController = new DailyNutritionController(new DailyNutritionCreateUseCase
-						(new DailyNutritionDAO(new DBConnector())));
-				
-				DailyNutritionResponseCreateDTO dailyNutrition = dailyNutritionController.create(userInfo);
-				MealNutritionController mealController = new MealNutritionController(new MealNutritionCreateUseCase
-						(new MealNutritionDAO(new DBConnector())));
-				mealController.create(dailyNutrition);
-				
-				MainStage mainForm = new MainStage(response);
-				personalDataStage.close();
-				Stage mainStage = new Stage();
-	            mainForm.start(mainStage);
-			}
+			DailyNutritionResponseCreateDTO dailyNutrition = dailyNutritionController.create(userInfo);
+			MealNutritionController mealController = new MealNutritionController(
+					new MealNutritionCreateUseCase(new MealNutritionDAO(new DBConnector())));
+			mealController.create(dailyNutrition);
 
-			else if (this.isNewOrUpdate.equals(IsNewOrUpdate.UPDATE)) {
-				// registrationUserController.update(userDTO);
-			}
-		}
-		catch (Exception ex) {
+			MainStage mainForm = new MainStage(response);
+			personalDataStage.close();
+			Stage mainStage = new Stage();
+			mainForm.start(mainStage);
+
+		} catch (Exception ex) {
 			ex.printStackTrace();
 			showAlert(ex.getMessage(), Alert.AlertType.WARNING);
 		}

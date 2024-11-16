@@ -9,6 +9,6 @@ public class DailyNutritionGetUseCase implements IDailyNutritionGetUseCase{
 	}
 	
 	public DailyNutrition getDiet(int userId)throws Exception{
-		return dailyNutritionDAO.get(userId);		
+		return dailyNutritionDAO.get(userId);
 	}		
 }

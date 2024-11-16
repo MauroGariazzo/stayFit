@@ -18,7 +18,7 @@ public class MealNutritionDAO implements IMealNutritionDAO {
 		this.dbConnector = dbConnector;
 	}
 
-	public void insert(MealNutritionCreateRequestDTO request) throws Exception {
+	public void insert(MealNutritionRequestCreateDTO request) throws Exception {
 		String query = "INSERT INTO stayfit.mealNutrition(daily_nutrition_fk, meal_type, calories,"
 				+ "proteins, carbs, fats) VALUES(?,?,?,?,?,?)";
 
@@ -35,9 +35,26 @@ public class MealNutritionDAO implements IMealNutritionDAO {
 			throw new Exception(ex.getMessage());
 		}
 	}
+	
+	public void update(MealNutritionRequestUpdateDTO request) throws Exception {
+		String query = "UPDATE stayfit.mealNutrition SET calories = ?, proteins = ?, carbs = ?, fats = ? WHERE "
+				+ "daily_nutrition_fk = ? AND meal_type = ?";
+		
+		try (PreparedStatement pstmt = dbConnector.getPreparedStatementObj(query)) {						
+			pstmt.setInt(1, request.calories);
+			pstmt.setInt(2, request.proteins);
+			pstmt.setInt(3, request.carbs);
+			pstmt.setInt(4, request.fats);
+			pstmt.setInt(5, request.dailyNutritionFk);
+			pstmt.setInt(6, request.mealType.ordinal());
+			pstmt.execute();
+		} 
+		catch (Exception ex) {
+			throw new Exception(ex.getMessage());
+		}
+	}
 
-	public Map<MealType, MealNutrition> get(int daily_nutrition_fk) throws Exception {
-		System.out.println("dailyNutrition: " + daily_nutrition_fk);
+	public Map<MealType, MealNutrition> get(int daily_nutrition_fk) throws Exception {		
 		String query = "SELECT * FROM stayfit.mealNutrition WHERE daily_nutrition_fk = ?";
 		Map<MealType, MealNutrition> mealNutritions = new HashMap<>();
 
@@ -53,10 +70,12 @@ public class MealNutritionDAO implements IMealNutritionDAO {
 							rs.getInt("daily_nutrition_fk"));
 					mealNutritions.put(MealType.valueOf(mealType), mealNutrition);
 				}
-			} catch (Exception ex) {
+			} 
+			catch (Exception ex) {
 				throw new Exception(ex.getMessage());
 			}
-		} catch (Exception ex) {
+		} 
+		catch (Exception ex) {
 			throw new Exception(ex.getMessage());
 		}
 		return mealNutritions;

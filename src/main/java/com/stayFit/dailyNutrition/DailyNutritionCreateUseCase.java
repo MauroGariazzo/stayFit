@@ -18,12 +18,12 @@ public class DailyNutritionCreateUseCase implements IDailyNutritionCreateUseCase
 	
 	public DailyNutrition create(UserInfoDTO userInfo)throws Exception {
 		//calcolo calorie, proteine ecc.		
-		DailyNutritionRequestCreateDTO diet = calculateMaleDiet(userInfo);
+		DailyNutritionRequestCreateDTO diet = calculateDiet(userInfo);
 		return createDietDAO.insert(diet);
 	}
 	
 	
-	private DailyNutritionRequestCreateDTO calculateMaleDiet(UserInfoDTO userInfoDTO) {
+	private DailyNutritionRequestCreateDTO calculateDiet(UserInfoDTO userInfoDTO) {
 		int age = Period.between(userInfoDTO.birthday, LocalDate.now()).getYears();
 		double BMR = 0;
 		if(userInfoDTO.gender == Gender.MASCHIO) {
@@ -47,7 +47,7 @@ public class DailyNutritionCreateUseCase implements IDailyNutritionCreateUseCase
 		
 		
 		return new DailyNutritionRequestCreateDTO((int)totalDailyCalories, (int)totalDailyGramsProteins, 
-				(int)totalDailyGramsCarbs, (int)totalDailyGramsFats, userInfoDTO.userCredentials_fk);
+				(int)totalDailyGramsCarbs, (int)totalDailyGramsFats, userInfoDTO.id);
 	}
 	
 	private double calculateTDEE(double BMR, FitnessState fitnessState) {

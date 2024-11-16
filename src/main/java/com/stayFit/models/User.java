@@ -20,6 +20,7 @@ public class User {
 	private LocalDate subscriptionDate;
 	private int userCredentials_fk;
 	
+	
 	public User() {
 		
 	}

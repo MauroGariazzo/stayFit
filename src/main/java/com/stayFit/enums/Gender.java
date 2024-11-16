@@ -22,5 +22,16 @@ public enum Gender {
         }
         throw new IllegalArgumentException("Codice non trovato");
     }
+    
+    public static String getStringForStageView(Gender gender) {
+    	switch(gender) {
+    		case MASCHIO:
+    			return "Maschio";
+    		case FEMMINA:
+    			return "Femmina";
+    		default:
+    			return "";
+    	}
+    }
 }
 

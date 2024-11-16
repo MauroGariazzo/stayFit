@@ -49,9 +49,9 @@ public class RegistrationStage {
         	try{ 
         		ResponseUserCredentialsDTO response = createUserCredentials(newUsernameField, newPasswordField, 
         				newEmailField);
-        		PersonalDataStage personalDataForm = new PersonalDataStage(response.id, IsNewOrUpdate.NEW);
+        		PersonalDataStage personalDataForm = new PersonalDataStage(response.id);
             	registerStage.close();
-            	personalDataForm.show();            	
+            	personalDataForm.show();
         	}
         	catch(Exception ex) {
         		showAlert(ex.getMessage(), Alert.AlertType.WARNING);

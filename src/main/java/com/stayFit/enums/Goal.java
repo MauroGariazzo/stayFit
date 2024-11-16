@@ -23,4 +23,17 @@ public enum Goal {
         }
         throw new IllegalArgumentException("Codice non trovato");
     }
+    
+    public static String getStringForStageView(Goal goal) {
+    	switch(goal) {
+    		case PERDERE_PESO:
+    			return "Perdere peso";
+    		case MANTENERE_PESO:
+    			return "Mantenere peso";
+    		case METTERE_MASSA_MUSCOLARE:
+    			return "Mettere massa muscolare";
+    		default:
+    			return "";
+    	}
+    }
 }

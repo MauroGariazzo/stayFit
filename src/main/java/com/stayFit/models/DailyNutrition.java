@@ -21,6 +21,14 @@ public class DailyNutrition {
 		this.fats = fats;
 		this.fk_user = fk_user;
 	}
+	
+	public DailyNutrition(int calories, int proteins, int carbs, int fats, int fk_user) {		
+		this.calories = calories;
+		this.proteins = proteins;
+		this.carbs = carbs;
+		this.fats = fats;
+		this.fk_user = fk_user;
+	}
 
 	public int getId() {
 		return id;

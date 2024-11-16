@@ -70,8 +70,7 @@ public class LoginStage extends Application {
         	LoginController loginController = new LoginController(new LoginGetUseCase(new LoginDAO(new DBConnector())));
         	LoginRequestDTO loginRequestDTO = new LoginRequestDTO(username, password);
         	try {
-        		ResponseUserDTO response = loginController.login(loginRequestDTO);
-        		
+        		ResponseUserDTO response = loginController.login(loginRequestDTO);        		
         		MainStage mainForm = new MainStage(response);
         		primaryStage.close();
         		mainForm.start(new Stage());

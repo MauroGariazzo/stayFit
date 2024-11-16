@@ -1,22 +1,14 @@
 package com.stayFit.views;
 
-import java.time.LocalDate;
-
-import com.stayFit.dailyNutrition.DailyNutritionController;
-import com.stayFit.dailyNutrition.DailyNutritionDAO;
-import com.stayFit.dailyNutrition.DailyNutritionGetUseCase;
 import com.stayFit.dailyNutrition.DailyNutritionResponseGetDTO;
 import com.stayFit.registration.ResponseUserDTO;
-import com.stayFit.repository.DBConnector;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -33,30 +25,18 @@ public class MainStage {
 	private DailyNutritionResponseGetDTO response;
 	
 	public MainStage(ResponseUserDTO userDTO) {
-		this.userDTO = userDTO;
-
-		DailyNutritionController dailyNutritionController = new DailyNutritionController(
-				new DailyNutritionGetUseCase(new DailyNutritionDAO(new DBConnector())));
-
-		response = new DailyNutritionResponseGetDTO();
-		try {
-			response = dailyNutritionController.get(userDTO.id);
-		} 
-		catch (Exception ex) {
-			showAlert(ex.getMessage(), Alert.AlertType.WARNING);
-		}
-
+		this.userDTO = userDTO;		
 	}
 
 	// @Override
-	public void start(Stage primaryStage) {
+	public void start(Stage primaryStage) {		
 		primaryStage.setTitle("Stay Fit");
 				
 		VBox sidebar = new VBox(20);
 		sidebar.setPadding(new Insets(30));
 		sidebar.setStyle("-fx-background-color: #b22222;");
 
-		Label appTitle = new Label("Food App");
+		Label appTitle = new Label("Stay Fit");
 		appTitle.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
 		
 		ImageView titleImageView = new ImageView(new Image("/icons/apple.png"));
@@ -75,17 +55,26 @@ public class MainStage {
 					response.dailyFats, response.dailyCarbs,  userDTO.subscriptionDate, response)
 					.getDailyReportView();*/
 			
-			StackPane TEST = new DailyReportStage(userDTO, response.dailyCalories, response.dailyProteins, 
-					response.dailyFats, response.dailyCarbs, LocalDate.of(2024, 10, 30), response)
+			StackPane content = new DailyReportStage(userDTO, userDTO.subscriptionDate)
 					.getDailyReportView();
-			scrollPane.setContent(TEST);
+			
+			/*StackPane TEST = new DailyReportStage(userDTO, response.dailyCalories, response.dailyProteins, 
+					response.dailyFats, response.dailyCarbs, LocalDate.of(2024, 10, 30), response)
+					.getDailyReportView();*/
+			scrollPane.setContent(content);
 		});
 
 		Label reportButton = createSidebarButtonWithImage("Report", "/icons/report.png");
-		reportButton.setOnMouseClicked(e -> showReportContent());
+		reportButton.setOnMouseClicked(e -> {
+			StackPane content = new ReportStage().createReportContent();
+			scrollPane.setContent(content);
+			});
 
 		Label dataButton = createSidebarButtonWithImage("I miei dati", "/icons/myData.png");
-		dataButton.setOnMouseClicked(e -> showPersonalDataContent());
+		dataButton.setOnMouseClicked(e ->{
+			StackPane content = new UserInfoDataStage(userDTO.id).createPersonalDataPane();
+			scrollPane.setContent(content);
+		});
 		
 
 		sidebar.getChildren().addAll(titleBox, foodsButton, reportButton, dataButton, exitButton);
@@ -139,18 +128,14 @@ public class MainStage {
 		
 	}
 
-	private void showPersonalDataContent() {
-		
-	}
-
 	
 	private void showWelcomeContent() {
 		VBox content = new VBox(10);
 		content.setAlignment(Pos.CENTER);
 		content.setPadding(new Insets(20));
 
-		Label title = new Label("Welcome to the Food App!");
-		Label message = new Label("Select a category from the left to get started.");
+		Label title = new Label("Benvenuto su Stay Fit");
+		Label message = new Label("Seleziona una categoria dallo sidebar");
 
 		content.getChildren().addAll(title, message);
 		scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane

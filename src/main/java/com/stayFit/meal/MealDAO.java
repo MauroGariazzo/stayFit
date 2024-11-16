@@ -19,7 +19,7 @@ public class MealDAO implements IMealDAO {
 		this.dbConnector = dbConnector;
 	}
 
-	public int insert(MealCreateRequestDTO mealCreateRequestDTO) throws Exception {		
+	public int insert(MealCreateRequestDTO mealCreateRequestDTO) throws Exception {
 		String query = "INSERT INTO stayFit.meal(mealUpdateDate, mealType, fk_user)VALUES(?,?,?)";
 		int generatedId = -1;
 		try (PreparedStatement pstmt = dbConnector.getConnection().prepareStatement(query,
