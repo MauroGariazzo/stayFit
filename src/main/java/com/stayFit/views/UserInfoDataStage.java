@@ -122,11 +122,9 @@ public class UserInfoDataStage {
 	}
 
 	private void loadUserData() {
-		// UserDAO ud = new UserDAO(new DBConnector());
 		UserController userGetController = new UserController(new UserGetUseCase(new UserDAO(new DBConnector())));
 		try {
 			ResponseGetUserDTO response = userGetController.get(idUser);
-			// User user = ud.getUserInfo(idUser);
 
 			nameField.setText(response.name);
 			surnameField.setText(response.surname);

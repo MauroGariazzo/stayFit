@@ -25,23 +25,23 @@ import javafx.scene.image.Image;
 
 public class OpenFoodFactsAPI {
 
-    // Classe interna per gestire lo stato di inizializzazione di JavaFX
+    // classe interna per gestire lo stato di inizializzazione di JavaFX
     private static class JavaFXInitializer {
         static AtomicBoolean initialized = new AtomicBoolean(false);
     }
 
     private static void initializeJavaFX() {
-        // Verifica se JavaFX è già stato inizializzato
+        // verifico se JavaFX è già stato inizializzato
         if (!JavaFXInitializer.initialized.get()) {
             final CountDownLatch latch = new CountDownLatch(1);
             Platform.startup(() -> {
-                // Callback vuota, l'inizializzazione è completata
                 latch.countDown();
             });
             try {
-                latch.await(); // Attende che JavaFX sia inizializzato
+                latch.await();
                 JavaFXInitializer.initialized.set(true);
-            } catch (InterruptedException e) {
+            } 
+            catch (InterruptedException e) {
                 throw new RuntimeException("Errore durante l'inizializzazione di JavaFX", e);
             }
         }
@@ -50,12 +50,12 @@ public class OpenFoodFactsAPI {
     public static List<ProductGetResponseDTO> search(String name) throws Exception {
         //initializeJavaFX(); // Inizializza JavaFX
 
-        // URL per la ricerca del prodotto, assicurati di codificare il nome
+        // URL per la ricerca del prodotto
         String encodedName = URLEncoder.encode(name, "UTF-8");
         URL url = new URL("https://world.openfoodfacts.org/cgi/search.pl?search_terms=" + 
             encodedName + "&search_simple=1&json=1&page_size=50");
 
-        // Apertura della connessione
+        // Apertura connessione
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setConnectTimeout(10000); // Timeout di connessione di 10 secondi
         connection.setReadTimeout(10000);    // Timeout di lettura di 10 secondi
@@ -128,8 +128,7 @@ public class OpenFoodFactsAPI {
             product.salt = salt;
             
             if(imageUrl != null && !imageUrl.isEmpty()) {
-                try {
-                    // Carica l'immagine in modo sincrono
+                try {                   
                     product.productImage = new Image(imageUrl, false);
                 } 
                 catch (Exception e) {
@@ -144,13 +143,11 @@ public class OpenFoodFactsAPI {
             
             productList.add(product);
         }
-
-        // Restituisce la lista di prodotti
         return productList;
     }
     
     public static void main(String[] args) {
-        //Inizializza JavaFX
+        //Inizializzione JavaFX
         initializeJavaFX();
 
         String[] types = {

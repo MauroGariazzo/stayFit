@@ -74,8 +74,7 @@ public class AddFoodForMealStage {
 	    Button searchButton = new Button("Cerca");
 	    searchButton.setOnAction(e -> {
 	        String name = foodName.getText().trim();
-	        if (name.isEmpty()) {
-	            //showError("Per favore, inserisci il nome del cibo.");
+	        if (name.isEmpty()) {	           
 	            return;
 	        }
 	        foodListView.getItems().clear();  // Pulisce la lista
@@ -119,14 +118,11 @@ public class AddFoodForMealStage {
 	    // Layout per il bottone di ricerca
 	    HBox searchButtonBox = new HBox(searchButton);
 	    searchButtonBox.setAlignment(Pos.CENTER_RIGHT);
-
-	    // Crea due nuovi pulsanti sotto la ListView
-	    //Button addProductButton = new Button("Aggiungi");	    
+ 
 	    Button exitButton = new Button("Esci");
 	    exitButton.setOnAction(e -> closeForm());
 
-	    // Layout per i pulsanti
-	    //HBox buttonBox = new HBox(10, addProductButton, exitButton);
+
 	    HBox buttonBox = new HBox(10, exitButton);
 	    buttonBox.setAlignment(Pos.CENTER);
 	    buttonBox.setPadding(new Insets(10, 0, 0, 0)); // Aggiungi padding per distanziarli dalla ListView
@@ -233,13 +229,13 @@ public class AddFoodForMealStage {
 	                
 
 	                // Metodo per mostrare un messaggio di errore
-	                private void showError(String message) {
+	                /*private void showError(String message) {
 	                    Alert alert = new Alert(Alert.AlertType.ERROR);
 	                    alert.setTitle("Errore");
 	                    alert.setHeaderText(null);
 	                    alert.setContentText(message);
 	                    alert.showAndWait();
-	                }
+	                }*/ 
 	            };
 	        }
 	    };

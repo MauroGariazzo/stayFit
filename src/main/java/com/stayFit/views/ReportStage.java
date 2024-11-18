@@ -58,13 +58,13 @@ public class ReportStage {
 	}
 
 	public StackPane createReportContent() {
-		// ** GRAFICO DEL PESO **
+		// GRAFICO DEL PESO 
 		LineChart<String, Number> weightChart = createWeightChart();
 
-		// ** SEZIONE NUTRIENTI **
+		// SEZIONE NUTRIENTI 
 		VBox nutrientReport = createNutrientReport();
 
-		// ** LAYOUT GENERALE **
+		// LAYOUT GENERALE
 		VBox content = new VBox(20);
 		content.setAlignment(Pos.TOP_CENTER);
 		content.setPadding(new Insets(20));
@@ -110,7 +110,7 @@ public class ReportStage {
 	}
 
 	private VBox createNutrientReport() {
-		// ** ComboBox per selezione periodo **
+		// ComboBox per selezione periodo
 		ComboBox<String> periodComboBox = new ComboBox<>();
 		periodComboBox.getItems().addAll("Giornaliero", "Settimanale", "Mensile");
 		periodComboBox.setValue("Giornaliero"); // Valore predefinito
@@ -120,7 +120,7 @@ public class ReportStage {
 			updateNutrientData(selectedPeriod);
 		});
 
-		// ** Etichette per riepilogo nutrienti **
+		// Etichette per riepilogo nutrienti
 		carbsLabel = new Label("Carboidrati: -");
 		proteinsLabel = new Label("Proteine: -");
 		fatsLabel = new Label("Grassi: -");
@@ -128,7 +128,7 @@ public class ReportStage {
 		VBox summaryBox = new VBox(10, carbsLabel, proteinsLabel, fatsLabel);
 		summaryBox.setAlignment(Pos.CENTER_LEFT);
 
-		// ** Grafico nutrienti **
+		// Grafico nutrienti
 		CategoryAxis xAxis = new CategoryAxis();
 		xAxis.setLabel("Data");
 
@@ -269,10 +269,10 @@ public class ReportStage {
 		fatsLabel.setText("Grassi: Ø " + avgFats + " g");
 	}
 
-	private String toRgbString(Color color) {
+	/*private String toRgbString(Color color) {
 		return "rgb(" + (int) (color.getRed() * 255) + "," + (int) (color.getGreen() * 255) + ","
 				+ (int) (color.getBlue() * 255) + ")";
-	}
+	}*/
 
 	private void showAlert(String message, Alert.AlertType type) {
 		Alert alert = new Alert(type);

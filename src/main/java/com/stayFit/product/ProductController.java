@@ -25,7 +25,7 @@ public class ProductController {
 		}
 	}
 	
-	public List<ProductGetResponseDTO>get(ProductGetRequestDTO productGetRequestDTO){
+	public List<ProductGetResponseDTO>get(ProductGetRequestDTO productGetRequestDTO)throws Exception{
 		List<ProductGetResponseDTO>productsDTO = new ArrayList<>();
 		
 		try {
@@ -50,7 +50,7 @@ public class ProductController {
 			}
 		}
 		catch(Exception ex) {
-			//throw new Exception(ex.getMessage());
+			throw new Exception(ex.getMessage());
 		}
 		return productsDTO;
 	}

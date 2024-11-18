@@ -60,10 +60,6 @@ public class RegistrationUserController {
 				user.getGoal(), user.getSubscriptionDate(), user.getUserCredentials_fk()); 
 	}
 
-	/*public void update(RequestCreateUserDTO registrationRequestDTO)throws Exception {
-		//validazione dei dati
-		registrationUseCase.update(registrationRequestDTO);
-	}*/
 	
 	public double getBMI(double height, double weight)throws Exception {
 		return registrationUseCase.calculateBMI(height, weight);
