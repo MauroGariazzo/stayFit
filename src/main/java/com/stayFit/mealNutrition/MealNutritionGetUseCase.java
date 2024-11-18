@@ -14,14 +14,17 @@ public class MealNutritionGetUseCase implements IMealNutritionGetUseCase {
 	public MealNutrition get(int dailyNutritionId, MealType mealType) throws Exception{
 		Map<MealType, MealNutrition> nutritions = mealNutritionDAO.get(dailyNutritionId);
 		
-		MealNutrition mealNutrition = new MealNutrition();		
+		if(nutritions.size() == 0) {
+			return new MealNutrition();
+		}
+		
+		MealNutrition mealNutrition = nutritions.get(mealType);
+		//System.out.println("proteine: " + mealNutrition.getProteins());
 		mealNutrition.setCalories(Math.round(mealNutrition.getCalories()*100)/100);
 		mealNutrition.setProteins(Math.round(mealNutrition.getProteins()*100)/100);
 		mealNutrition.setCarbs(Math.round(mealNutrition.getCarbs()*100)/100);
 		mealNutrition.setFats(Math.round(mealNutrition.getFats()*100)/100);
-		if(nutritions.size() == 0) {
-			return new MealNutrition();
-		}
-		return nutritions.get(mealType);
+		
+		return mealNutrition;
 	}
 }

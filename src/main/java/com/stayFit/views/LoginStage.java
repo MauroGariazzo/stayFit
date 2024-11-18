@@ -49,7 +49,7 @@ public class LoginStage extends Application {
         registerLabel = new Label("Non hai un account? Registrati qui.");
         registerLabel.setTextFill(Color.BLUE);
         registerLabel.setUnderline(true);
-        registerLabel.setOnMouseClicked(event -> openRegisterForm());
+        registerLabel.setOnMouseClicked(event -> openRegisterForm(primaryStage));
 
         loginLayout.getChildren().addAll(titleLabel, usernameField, passwordField, loginButton, registerLabel);
 
@@ -81,8 +81,9 @@ public class LoginStage extends Application {
         }
     }
 
-    private void openRegisterForm() {
+    private void openRegisterForm(Stage primaryStage) {
         RegistrationStage registerForm = new RegistrationStage();
+        primaryStage.close();
         registerForm.show();
     }
 

@@ -33,8 +33,8 @@ public class MealNutritionController {
 	
 	public MealNutritionResponseGetDTO get(int dailyNutritionId, MealType mealType) throws Exception {		
 		MealNutrition mealNutrition = mealNutritionGetUseCase.get(dailyNutritionId, mealType);
-		//System.out.println(mealType);
-		return new MealNutritionResponseGetDTO(mealNutrition.getMealType(), mealNutrition.getCalories(), mealNutrition.getProteins(), 
-				mealNutrition.getCarbs(), mealNutrition.getFats());
+		
+		return new MealNutritionResponseGetDTO(mealNutrition.getMealType(), mealNutrition.getCalories(), 
+				mealNutrition.getProteins(), mealNutrition.getCarbs(), mealNutrition.getFats());
 	}
 }

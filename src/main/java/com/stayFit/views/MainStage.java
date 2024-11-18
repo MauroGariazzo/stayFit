@@ -46,21 +46,15 @@ public class MainStage {
 	    HBox titleBox = new HBox(10, titleImageView, appTitle);
 	    titleBox.setAlignment(Pos.CENTER_LEFT);
 
-		Label exitButton = createSidebarButtonWithImage("Esci", "/icons/exit.png");
-		exitButton.setOnMouseClicked(e -> primaryStage.close());
-
+		Label homeButton = createSidebarButtonWithImage("Home", "/icons/home.png");
+		homeButton.setOnMouseClicked(e -> { showWelcomeContent();});
+		
 		Label foodsButton = createSidebarButtonWithImage("La mia dieta", "/icons/food.png");
 		foodsButton.setOnMouseClicked(e -> {
-			/*StackPane content = new DailyReportStage(userDTO, response.dailyCalories, response.dailyProteins, 
-					response.dailyFats, response.dailyCarbs,  userDTO.subscriptionDate, response)
-					.getDailyReportView();*/
 			
 			StackPane content = new DailyReportStage(userDTO, userDTO.subscriptionDate)
 					.getDailyReportView();
-			
-			/*StackPane TEST = new DailyReportStage(userDTO, response.dailyCalories, response.dailyProteins, 
-					response.dailyFats, response.dailyCarbs, LocalDate.of(2024, 10, 30), response)
-					.getDailyReportView();*/
+
 			scrollPane.setContent(content);
 		});
 
@@ -76,8 +70,10 @@ public class MainStage {
 			scrollPane.setContent(content);
 		});
 		
-
-		sidebar.getChildren().addAll(titleBox, foodsButton, reportButton, dataButton, exitButton);
+		Label exitButton = createSidebarButtonWithImage("Esci", "/icons/exit.png");
+		exitButton.setOnMouseClicked(e -> primaryStage.close());
+		
+		sidebar.getChildren().addAll(titleBox, homeButton, foodsButton, reportButton, dataButton, exitButton);
 
 		// Layout principale con area centrale modificabile
 		root = new BorderPane();
@@ -124,28 +120,29 @@ public class MainStage {
 		return button;
 	}
 
-	private void showReportContent() {
-		
-	}
-
 	
 	private void showWelcomeContent() {
 		VBox content = new VBox(10);
 		content.setAlignment(Pos.CENTER);
 		content.setPadding(new Insets(20));
 
-		Label title = new Label("Benvenuto su Stay Fit");
-		Label message = new Label("Seleziona una categoria dallo sidebar");
+		Label title = new Label("Benvenuto su Stay Fit!");
+		Label message = new Label("Seleziona una categoria dallo sidebar per iniziare:\n"
+				+ "- 'La mia dieta': Carica gli alimenti della tua giornata.\n"
+				+ "- 'Report': Consulta le statistiche sull'andamento della tua dieta (peso e macronutrienti).\n"
+				+ "- 'I miei dati': Rivedi e modifica i tuoi dati personali, obiettivo, stato di fitness "
+				+ "e attività fisica. Modificando questi parametri, la tua dieta verrà rigenerata automaticamente.");
+
 
 		content.getChildren().addAll(title, message);
 		scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane
 	}
 	
-	private void showAlert(String message, Alert.AlertType type) {
+	/*private void showAlert(String message, Alert.AlertType type) {
 		Alert alert = new Alert(type);
 		alert.setTitle("Errore");
 		alert.setHeaderText(null);
 		alert.setContentText(message);
 		alert.showAndWait();
-	}
+	}*/
 }

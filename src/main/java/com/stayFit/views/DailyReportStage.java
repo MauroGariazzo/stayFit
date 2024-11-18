@@ -221,6 +221,8 @@ public class DailyReportStage implements PortionListener {
 	        PortionGetResponseDTO portionLunch = loadPortions(MealType.PRANZO);
 	        PortionGetResponseDTO portionDinner = loadPortions(MealType.CENA);
 	        PortionGetResponseDTO portionSnacks = loadPortions(MealType.SPUNTINO);
+	        
+	        System.out.println(portionBreakFast.proteins);
 
 	        newMealsBox.getChildren().addAll(
 	            createMealItem("COLAZIONE",

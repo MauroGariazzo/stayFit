@@ -24,11 +24,12 @@ import com.stayFit.enums.Gender;
 import com.stayFit.enums.Goal;
 import com.stayFit.mealNutrition.MealNutritionController;
 import com.stayFit.mealNutrition.MealNutritionDAO;
-import com.stayFit.models.User;
 import com.stayFit.repository.DBConnector;
 import com.stayFit.user.RequestUpdateUserDTO;
+import com.stayFit.user.ResponseGetUserDTO;
 import com.stayFit.user.UserController;
 import com.stayFit.user.UserDAO;
+import com.stayFit.user.UserGetUseCase;
 import com.stayFit.weightReport.WeightReportController;
 import com.stayFit.weightReport.WeightReportCreateRequestDTO;
 import com.stayFit.weightReport.WeightReportCreateUseCase;
@@ -49,8 +50,8 @@ public class UserInfoDataStage {
 
 	public UserInfoDataStage(int idUser) {
 		this.idUser = idUser;
-		
-		this.nameField = new TextField();		
+
+		this.nameField = new TextField();
 		this.surnameField = new TextField();
 		this.birthDatePicker = new DatePicker();
 		this.heightSpinner = new Spinner<Integer>();
@@ -71,27 +72,27 @@ public class UserInfoDataStage {
 		Label dataTitle = new Label("I tuoi dati:");
 		dataTitle.setFont(Font.font("Arial", FontWeight.BOLD, 20));
 		dataTitle.setTextFill(Color.DARKSLATEGRAY);
-		
+
 		nameField.setMaxWidth(200);
 		nameField.setPromptText("Nome");
 		surnameField.setMaxWidth(200);
 		surnameField.setPromptText("Cognome");
-		
+
 		birthDatePicker.setMaxWidth(200);
 		birthDatePicker.setPromptText("Data di Nascita");
-		
+
 		heightSpinner.setMaxWidth(200);
 		heightSpinner.setEditable(false);
-		
+
 		weightSpinner.setMaxWidth(200);
 		weightSpinner.setEditable(false);
-		
+
 		fitnessStatusComboBox.setMaxWidth(200);
 		fitnessStatusComboBox.getItems().addAll("Sedentario", "Poco attivo", "Mediamente attivo", "Molto attivo");
-		
+
 		genderComboBox.setMaxWidth(200);
 		genderComboBox.getItems().addAll("Maschio", "Femmina");
-		
+
 		goalComboBox.setMaxWidth(200);
 		goalComboBox.getItems().addAll("Perdere Peso", "Mantenere Peso", "Mettere Massa Muscolare");
 
@@ -99,66 +100,14 @@ public class UserInfoDataStage {
 		Button saveButton = new Button("Salva");
 		saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 16px;");
 		saveButton.setOnAction(event -> {
-			/*UserDAO ud = new UserDAO(new DBConnector());
-			User user = new User();
-			user.setId(idUser);
-			user.setName(nameField.getText());
-			user.setSurname(surnameField.getText());
-			user.setBirthday(birthDatePicker.getValue());
-			user.setFitnessState(FitnessState.valueOf(fitnessStatusComboBox.getValue().toUpperCase().replace(" ", "_")));
-			user.setGender(Gender.valueOf(genderComboBox.getValue().toUpperCase()));
-			user.setGoal(Goal.valueOf(goalComboBox.getValue().toUpperCase().replace(" ","_")));
-			user.setHeight(heightSpinner.getValue());
-			user.setWeight(weightSpinner.getValue());
-			ud.save(user);*/
-			UserController userUpdateController = new UserController(new UserUpdateUseCase(new UserDAO
-					(new DBConnector())));
-			/*int id, String name, String surname, int height, double weight, LocalDate birthday,
-			FitnessState fitnessState, Gender gender, Goal goal, LocalDate subscriptionDate,
-			int userCredentials_fk*/
-			RequestUpdateUserDTO request = new RequestUpdateUserDTO(idUser, nameField.getText(), surnameField.getText(),
-					birthDatePicker.getValue(), FitnessState.valueOf(fitnessStatusComboBox.getValue().toUpperCase().replace(" ", "_")),
-							Gender.valueOf(genderComboBox.getValue().toUpperCase()), Goal.valueOf(goalComboBox.getValue().
-									toUpperCase().replace(" ","_")), heightSpinner.getValue(), weightSpinner.getValue()); 
-
 			try {
-				/*(int id, Gender gender, Goal goal, FitnessState fitnessState, 
-			LocalDate birthday, int height, double weight, int userCredentials_fk)*/
-				UserInfoDTO userInfo = new UserInfoDTO(request.id, request.gender, request.goal, request.fitnessState,
-						request.birthday, request.height, request.weight, request.userCredentials_fk);
-				
-				DailyNutritionController dailyNutritionControllerForGet = new DailyNutritionController(
-						new DailyNutritionGetUseCase(new DailyNutritionDAO(new DBConnector())));
-				
-				// Ottengo la dieta dell'utente
-				DailyNutritionResponseGetDTO dailyNutritionResponse = dailyNutritionControllerForGet.get(idUser);
-				
-				DailyNutritionController dailyNutritionController = new DailyNutritionController(
-						new DailyNutritionUpdateUseCase(new DailyNutritionDAO(new DBConnector())));
-				
-				// Aggiorno la dieta quotidiana
-				DailyNutritionResponseUpdateDTO dailyNutrition = dailyNutritionController.update(userInfo);
-				dailyNutrition.id = dailyNutritionResponse.id;
-				
-				// Aggiorno i macronutrienti per ogni giorno
-				MealNutritionController mealController = new MealNutritionController(
-						new MealNutritionUpdateUseCase(new MealNutritionDAO(new DBConnector())));
-												
-				mealController.update(dailyNutrition);
-				
-				// Aggiorno il peso
-				WeightReportCreateRequestDTO requestRegisterWeight = new WeightReportCreateRequestDTO(userInfo.weight, 
-						LocalDate.now(), userInfo.id);
-				WeightReportController weightReport = new WeightReportController(new WeightReportCreateUseCase(
-						new WeightReportDAO(new DBConnector())));
-				weightReport.create(requestRegisterWeight);
-				
-				showAlert("Informazioni aggiornate con successo", Alert.AlertType.INFORMATION);
+				RequestUpdateUserDTO request = updateUserInfo(); // Aggiorna i dati dell'utente
+				updateNutrition(request); // Aggiorna la dieta
 			} 
 			catch (Exception ex) {
-				ex.printStackTrace();
-				showAlert("Qualcosa è andato storto", Alert.AlertType.ERROR);
+				showAlert(ex.getMessage(), Alert.AlertType.ERROR);
 			}
+
 		});
 
 		// Aggiunta di tutti i nodi al VBox
@@ -173,17 +122,83 @@ public class UserInfoDataStage {
 	}
 
 	private void loadUserData() {
-		UserDAO ud = new UserDAO(new DBConnector());
-		User user = ud.getUserInfo(idUser);
+		// UserDAO ud = new UserDAO(new DBConnector());
+		UserController userGetController = new UserController(new UserGetUseCase(new UserDAO(new DBConnector())));
+		try {
+			ResponseGetUserDTO response = userGetController.get(idUser);
+			// User user = ud.getUserInfo(idUser);
 
-		nameField.setText(user.getName());
-		surnameField.setText(user.getSurname());
-		heightSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(100, 250, user.getHeight()));
-		weightSpinner.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(10, 300, user.getWeight()));
-		fitnessStatusComboBox.setValue(FitnessState.getStringForStageView(user.getFitnessState()));
-		goalComboBox.setValue(Goal.getStringForStageView(user.getGoal()));
-		genderComboBox.setValue(Gender.getStringForStageView(user.getGender()));
-		birthDatePicker.setValue(user.getBirthday());
+			nameField.setText(response.name);
+			surnameField.setText(response.surname);
+			heightSpinner
+					.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(100, 250, response.height));
+			weightSpinner.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(10, 300, response.weight));
+			fitnessStatusComboBox.setValue(FitnessState.getStringForStageView(response.fitnessState));
+			goalComboBox.setValue(Goal.getStringForStageView(response.goal));
+			genderComboBox.setValue(Gender.getStringForStageView(response.gender));
+			birthDatePicker.setValue(response.birthday);
+		} 
+		catch (Exception ex) {
+			showAlert(ex.getMessage(), Alert.AlertType.ERROR);
+		}
+	}
+
+	private RequestUpdateUserDTO updateUserInfo() throws Exception {
+		UserController userUpdateController = new UserController(new UserUpdateUseCase(new UserDAO(new DBConnector())));
+
+		RequestUpdateUserDTO request = new RequestUpdateUserDTO(idUser, nameField.getText(), surnameField.getText(),
+				birthDatePicker.getValue(),
+				FitnessState.valueOf(fitnessStatusComboBox.getValue().toUpperCase().replace(" ", "_")),
+				Gender.valueOf(genderComboBox.getValue().toUpperCase()),
+				Goal.valueOf(goalComboBox.getValue().toUpperCase().replace(" ", "_")), heightSpinner.getValue(),
+				weightSpinner.getValue());
+
+		try {
+			userUpdateController.update(request);
+		} 
+		catch (Exception ex) {
+			throw new Exception(ex.getMessage());
+		}
+		return request;
+	}
+
+	private void updateNutrition(RequestUpdateUserDTO request) {
+		try {
+			UserInfoDTO userInfo = new UserInfoDTO(request.id, request.gender, request.goal, request.fitnessState,
+					request.birthday, request.height, request.weight, request.userCredentials_fk);
+
+			DailyNutritionController dailyNutritionControllerForGet = new DailyNutritionController(
+					new DailyNutritionGetUseCase(new DailyNutritionDAO(new DBConnector())));
+
+			// Ottengo la dieta dell'utente
+			DailyNutritionResponseGetDTO dailyNutritionResponse = dailyNutritionControllerForGet.get(idUser);
+
+			DailyNutritionController dailyNutritionController = new DailyNutritionController(
+					new DailyNutritionUpdateUseCase(new DailyNutritionDAO(new DBConnector())));
+
+			// Aggiorno la dieta quotidiana
+			DailyNutritionResponseUpdateDTO dailyNutrition = dailyNutritionController.update(userInfo);
+			dailyNutrition.id = dailyNutritionResponse.id;
+
+			// Aggiorno i macronutrienti per ogni giorno
+			MealNutritionController mealController = new MealNutritionController(
+					new MealNutritionUpdateUseCase(new MealNutritionDAO(new DBConnector())));
+
+			mealController.update(dailyNutrition);
+
+			// Aggiorno il peso
+			WeightReportCreateRequestDTO requestRegisterWeight = new WeightReportCreateRequestDTO(userInfo.weight,
+					LocalDate.now(), userInfo.id);
+			WeightReportController weightReport = new WeightReportController(
+					new WeightReportCreateUseCase(new WeightReportDAO(new DBConnector())));
+			weightReport.create(requestRegisterWeight);
+
+			showAlert("Informazioni aggiornate con successo", Alert.AlertType.INFORMATION);
+		} 
+		catch (Exception ex) {
+			ex.printStackTrace();
+			showAlert("Qualcosa è andato storto", Alert.AlertType.ERROR);
+		}
 	}
 
 	// Metodo per mostrare un avviso
