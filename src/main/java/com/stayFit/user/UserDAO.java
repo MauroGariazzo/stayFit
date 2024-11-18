@@ -10,13 +10,13 @@ import com.stayFit.enums.Goal;
 import com.stayFit.models.User;
 import com.stayFit.repository.DBConnector;
 
-public class UserDAO {
+public class UserDAO implements IUserDAO{
 	private DBConnector dbConnector;
 	
 	public UserDAO(DBConnector dbConnector) {
 		this.dbConnector = dbConnector;
 	}
-	public User getUserInfo(int idUser) {		
+	public User getUserInfo(int idUser) throws Exception {		
 		String query = "SELECT * FROM stayfit.stayfituser WHERE ID = ?";
 		User user = new User();
 		try (PreparedStatement pstmt = dbConnector.getPreparedStatementObj(query)){
@@ -40,29 +40,35 @@ public class UserDAO {
 			}
 		}
 		catch(Exception ex) {
-			System.out.println(ex.getLocalizedMessage());
+			throw new Exception(ex.getMessage());
+		}
+		finally {
+			dbConnector.closeConnection();
 		}
 		return user;
 	}
 	
-	public void save(User user){
+	public void update(RequestUpdateUserDTO request)throws Exception{
 		String query = "UPDATE stayfit.stayfituser SET stayfitUser_name = ?, stayfitUser_surname = ?, height = ?, "
 				+ "weight = ? , fitnessState = ?, birthday = ?, gender = ?, goal = ? WHERE ID = ?";		
 		try (PreparedStatement pstmt = dbConnector.getPreparedStatementObj(query)){
-			pstmt.setString(1, user.getName());
-			pstmt.setString(2, user.getSurname());
-			pstmt.setInt(3, user.getHeight());
-			pstmt.setDouble(4, user.getWeight());
-			pstmt.setInt(5, user.getFitnessState().ordinal());
-			pstmt.setDate(6, Date.valueOf(user.getBirthday()));
-			pstmt.setInt(7, user.getGender().ordinal());
-			pstmt.setInt(8, user.getGoal().ordinal());
-			pstmt.setInt(9, user.getId());
+			pstmt.setString(1, request.name);
+			pstmt.setString(2, request.surname);
+			pstmt.setInt(3, request.height);
+			pstmt.setDouble(4, request.weight);
+			pstmt.setInt(5, request.fitnessState.ordinal());
+			pstmt.setDate(6, Date.valueOf(request.birthday));
+			pstmt.setInt(7, request.gender.ordinal());
+			pstmt.setInt(8, request.goal.ordinal());
+			pstmt.setInt(9, request.id);
 			
 			pstmt.execute();
 		}
 		catch(Exception ex) {
-			System.out.println(ex.getLocalizedMessage());
+			throw new Exception(ex.getMessage());
+		}
+		finally {
+			dbConnector.closeConnection();
 		}
 	}
 }

@@ -32,6 +32,10 @@ import com.stayFit.registration.RegistrationUserDAO;
 import com.stayFit.registration.RequestCreateUserDTO;
 import com.stayFit.registration.ResponseUserDTO;
 import com.stayFit.repository.DBConnector;
+import com.stayFit.weightReport.WeightReportController;
+import com.stayFit.weightReport.WeightReportCreateRequestDTO;
+import com.stayFit.weightReport.WeightReportCreateUseCase;
+import com.stayFit.weightReport.WeightReportDAO;
 
 public class PersonalDataStage {
 	private int idUserCredentials;
@@ -136,7 +140,8 @@ public class PersonalDataStage {
 			// Calcolo del suo bmi
 			userDTO.BMI = registrationUserController.getBMI(userDTO.height, userDTO.weight);
 			// Registro le info del cliente
-			ResponseUserDTO response = registrationUserController.insert(userDTO);			
+			ResponseUserDTO response = registrationUserController.insert(userDTO);					
+			
 			// UserInfo per il calcolo della dieta
 			UserInfoDTO userInfo = new UserInfoDTO(response.id, userDTO.gender, userDTO.goal, userDTO.fitnessState, userDTO.birthday,
 					userDTO.height, userDTO.weight, userDTO.userCredentials_fk);
@@ -147,13 +152,20 @@ public class PersonalDataStage {
 			MealNutritionController mealController = new MealNutritionController(
 					new MealNutritionCreateUseCase(new MealNutritionDAO(new DBConnector())));
 			mealController.create(dailyNutrition);
+			
+			// Registro del peso (double weight, LocalDate weightDateRegistration, int user_fk)
+			WeightReportCreateRequestDTO requestRegisterWeight = new WeightReportCreateRequestDTO(response.weight, LocalDate.now(),
+					response.id);
+			WeightReportController weightReport = new WeightReportController(new WeightReportCreateUseCase(
+					new WeightReportDAO(new DBConnector())));
+			weightReport.create(requestRegisterWeight);
 
 			MainStage mainForm = new MainStage(response);
 			personalDataStage.close();
 			Stage mainStage = new Stage();
 			mainForm.start(mainStage);
-
-		} catch (Exception ex) {
+		}
+		catch (Exception ex) {
 			ex.printStackTrace();
 			showAlert(ex.getMessage(), Alert.AlertType.WARNING);
 		}

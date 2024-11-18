@@ -43,6 +43,9 @@ public class ProductDAO implements IProductDAO {
 		catch (Exception ex) {
 			throw new Exception(ex.getMessage());
 		}
+		finally {
+			dbConnector.closeConnection();
+		}
 	}
 	
 	public List<Product> get(ProductGetRequestDTO productDTO)throws Exception {
@@ -75,7 +78,9 @@ public class ProductDAO implements IProductDAO {
 			ex.printStackTrace();
 			throw new Exception(ex.getMessage());
 		}
-		System.out.println(products.size());
+		finally {
+			dbConnector.closeConnection();
+		}		
 		return products;
 	}
 }

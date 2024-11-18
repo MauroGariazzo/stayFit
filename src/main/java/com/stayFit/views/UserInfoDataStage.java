@@ -9,6 +9,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
+import java.time.LocalDate;
+
 import com.stayFit.dailyNutrition.DailyNutritionController;
 import com.stayFit.dailyNutrition.DailyNutritionUpdateUseCase;
 import com.stayFit.dailyNutrition.DailyNutritionGetUseCase;
@@ -24,7 +26,14 @@ import com.stayFit.mealNutrition.MealNutritionController;
 import com.stayFit.mealNutrition.MealNutritionDAO;
 import com.stayFit.models.User;
 import com.stayFit.repository.DBConnector;
+import com.stayFit.user.RequestUpdateUserDTO;
+import com.stayFit.user.UserController;
 import com.stayFit.user.UserDAO;
+import com.stayFit.weightReport.WeightReportController;
+import com.stayFit.weightReport.WeightReportCreateRequestDTO;
+import com.stayFit.weightReport.WeightReportCreateUseCase;
+import com.stayFit.weightReport.WeightReportDAO;
+import com.stayFit.user.UserUpdateUseCase;
 
 public class UserInfoDataStage {
 	private int idUser;
@@ -90,7 +99,7 @@ public class UserInfoDataStage {
 		Button saveButton = new Button("Salva");
 		saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 16px;");
 		saveButton.setOnAction(event -> {
-			UserDAO ud = new UserDAO(new DBConnector());
+			/*UserDAO ud = new UserDAO(new DBConnector());
 			User user = new User();
 			user.setId(idUser);
 			user.setName(nameField.getText());
@@ -101,12 +110,22 @@ public class UserInfoDataStage {
 			user.setGoal(Goal.valueOf(goalComboBox.getValue().toUpperCase().replace(" ","_")));
 			user.setHeight(heightSpinner.getValue());
 			user.setWeight(weightSpinner.getValue());
-			ud.save(user);
+			ud.save(user);*/
+			UserController userUpdateController = new UserController(new UserUpdateUseCase(new UserDAO
+					(new DBConnector())));
+			/*int id, String name, String surname, int height, double weight, LocalDate birthday,
+			FitnessState fitnessState, Gender gender, Goal goal, LocalDate subscriptionDate,
+			int userCredentials_fk*/
+			RequestUpdateUserDTO request = new RequestUpdateUserDTO(idUser, nameField.getText(), surnameField.getText(),
+					birthDatePicker.getValue(), FitnessState.valueOf(fitnessStatusComboBox.getValue().toUpperCase().replace(" ", "_")),
+							Gender.valueOf(genderComboBox.getValue().toUpperCase()), Goal.valueOf(goalComboBox.getValue().
+									toUpperCase().replace(" ","_")), heightSpinner.getValue(), weightSpinner.getValue()); 
 
 			try {
-				UserInfoDTO userInfo = new UserInfoDTO(user.getId(),user.getGender(), user.getGoal(), user.getFitnessState(),
-						user.getBirthday(), user.getHeight(), user.getWeight(), user.getUserCredentials_fk());
-
+				/*(int id, Gender gender, Goal goal, FitnessState fitnessState, 
+			LocalDate birthday, int height, double weight, int userCredentials_fk)*/
+				UserInfoDTO userInfo = new UserInfoDTO(request.id, request.gender, request.goal, request.fitnessState,
+						request.birthday, request.height, request.weight, request.userCredentials_fk);
 				
 				DailyNutritionController dailyNutritionControllerForGet = new DailyNutritionController(
 						new DailyNutritionGetUseCase(new DailyNutritionDAO(new DBConnector())));
@@ -124,9 +143,16 @@ public class UserInfoDataStage {
 				// Aggiorno i macronutrienti per ogni giorno
 				MealNutritionController mealController = new MealNutritionController(
 						new MealNutritionUpdateUseCase(new MealNutritionDAO(new DBConnector())));
-				
+												
 				mealController.update(dailyNutrition);
-
+				
+				// Aggiorno il peso
+				WeightReportCreateRequestDTO requestRegisterWeight = new WeightReportCreateRequestDTO(userInfo.weight, 
+						LocalDate.now(), userInfo.id);
+				WeightReportController weightReport = new WeightReportController(new WeightReportCreateUseCase(
+						new WeightReportDAO(new DBConnector())));
+				weightReport.create(requestRegisterWeight);
+				
 				showAlert("Informazioni aggiornate con successo", Alert.AlertType.INFORMATION);
 			} 
 			catch (Exception ex) {

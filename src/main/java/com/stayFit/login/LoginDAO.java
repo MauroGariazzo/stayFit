@@ -47,6 +47,10 @@ public class LoginDAO implements ILoginDAO {
 			ex.printStackTrace();
 			throw new Exception(ex.getMessage());
 		}
+		
+		finally {
+			dbConnector.closeConnection();
+		}
 	}
 
 	public String getCryptedPassword(LoginRequestDTO loginRequestDTO) throws Exception {
@@ -64,8 +68,13 @@ public class LoginDAO implements ILoginDAO {
 			} catch (Exception ex) {
 				throw new Exception("Username o password errati");
 			}
-		} catch (Exception ex) {
+		}
+		catch (Exception ex) {
 			throw new Exception(ex.getMessage());
+		}
+		
+		finally {
+			dbConnector.closeConnection();
 		}
 	}
 }

@@ -1,0 +1,22 @@
+/* styles.css */
+
+/* Stile per la serie Carboidrati */
+.carbs-series .chart-bar {
+    -fx-bar-fill: #4CAF50; /* Verde */
+}
+
+/* Stile per la serie Proteine */
+.proteins-series .chart-bar {
+    -fx-bar-fill: #2196F3; /* Blu */
+}
+
+/* Stile per la serie Grassi */
+.fats-series .chart-bar {
+    -fx-bar-fill: #FF9800; /* Arancione */
+}
+
+/* Opzionale: Stili per la legenda */
+.chart-legend-item .legend-symbol {
+    /* Assicura che i simboli della legenda seguano i colori delle serie */
+    -fx-background-color: derive(-fx-bar-fill, 20%);
+}

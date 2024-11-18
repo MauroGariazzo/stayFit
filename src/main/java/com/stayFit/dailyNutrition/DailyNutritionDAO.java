@@ -33,13 +33,19 @@ public class DailyNutritionDAO implements IDailyNutritionDAO {
 					return new DailyNutrition(generatedId, dailyNutritionRequestCreateDTO.calories,
 							dailyNutritionRequestCreateDTO.proteins, dailyNutritionRequestCreateDTO.carbs,
 							dailyNutritionRequestCreateDTO.fats, dailyNutritionRequestCreateDTO.fk_user);
-				} else {
+				}
+				else {
 					throw new Exception("Creazione dieta fallita, nessun ID ottenuto.");
 				}
 			}
-		} catch (Exception ex) {
+		} 
+		catch (Exception ex) {
 			ex.printStackTrace();
 			throw new Exception(ex.getMessage());
+		}
+		
+		finally {
+			dbConnector.closeConnection();
 		}
 	}
 
@@ -58,11 +64,15 @@ public class DailyNutritionDAO implements IDailyNutritionDAO {
 					diet.setFats(rs.getInt("fats"));
 				}
 			}
-		} 
+		}
+		
 		catch (Exception ex) {
 			throw new Exception(ex.getMessage());
-		}	
-		System.out.println(diet.getCalories());
+		}
+		
+		finally {
+			dbConnector.closeConnection();
+		}
 		return diet;
 	}
 
@@ -77,9 +87,14 @@ public class DailyNutritionDAO implements IDailyNutritionDAO {
 			pstmt.setInt(4, dietRequestUpdate.fats);
 			pstmt.setInt(5, dietRequestUpdate.fk_user);
 			pstmt.execute();
-		} 
+		}
+		
 		catch (Exception ex) {
 			throw new Exception(ex.getMessage());
+		}
+		
+		finally {
+			dbConnector.closeConnection();
 		}
 		return new DailyNutrition(dietRequestUpdate.calories, dietRequestUpdate.proteins,
 				dietRequestUpdate.carbs, dietRequestUpdate.fats, dietRequestUpdate.fk_user);

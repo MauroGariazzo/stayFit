@@ -31,8 +31,12 @@ public class MealNutritionDAO implements IMealNutritionDAO {
 			pstmt.setInt(6, request.fats);
 
 			pstmt.execute();
-		} catch (Exception ex) {
+		} 
+		catch (Exception ex) {
 			throw new Exception(ex.getMessage());
+		}
+		finally {
+			dbConnector.closeConnection();
 		}
 	}
 	
@@ -51,6 +55,9 @@ public class MealNutritionDAO implements IMealNutritionDAO {
 		} 
 		catch (Exception ex) {
 			throw new Exception(ex.getMessage());
+		}
+		finally {
+			dbConnector.closeConnection();
 		}
 	}
 
@@ -77,6 +84,9 @@ public class MealNutritionDAO implements IMealNutritionDAO {
 		} 
 		catch (Exception ex) {
 			throw new Exception(ex.getMessage());
+		}
+		finally {
+			dbConnector.closeConnection();
 		}
 		return mealNutritions;
 	}

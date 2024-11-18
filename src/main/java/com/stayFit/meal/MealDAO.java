@@ -42,6 +42,9 @@ public class MealDAO implements IMealDAO {
 		catch (Exception ex) {
 			throw new Exception(ex.getMessage());
 		}
+		finally {
+			dbConnector.closeConnection();
+		}
 		return generatedId;
 	}
 
@@ -65,6 +68,10 @@ public class MealDAO implements IMealDAO {
 		
 		catch(Exception ex) {
 			throw new Exception(ex.getMessage());
+		}
+		
+		finally {
+			dbConnector.closeConnection();
 		}
 		return meals;
 	}
@@ -97,6 +104,10 @@ public class MealDAO implements IMealDAO {
 		catch(Exception ex) {
 			throw new Exception(ex.getMessage());
 		}
+		
+		finally {
+			dbConnector.closeConnection();
+		}
 		return meals;
 	}
 	
@@ -111,6 +122,10 @@ public class MealDAO implements IMealDAO {
 		} 
 		catch (Exception ex) {
 			throw new Exception(ex.getMessage());
+		}
+		
+		finally {
+			dbConnector.closeConnection();
 		}
 	}	
 }

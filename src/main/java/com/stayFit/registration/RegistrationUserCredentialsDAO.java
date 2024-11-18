@@ -13,9 +13,6 @@ public class RegistrationUserCredentialsDAO implements IRegistrationUserCredenti
 	}
 	
 	public UserCredentials register(RequestCreateUserCredentialsDTO registrationRequestDTO)throws Exception{
-		System.out.println(registrationRequestDTO.username);
-		System.out.println(registrationRequestDTO.email);
-		System.out.println(registrationRequestDTO.password);
 		String query = "INSERT INTO stayfit.userCredentials(stayFitUser_email, stayFitUser_Username, "
 				+ "stayFitUser_Password) VALUES(?,?,?)";
 				
@@ -43,8 +40,9 @@ public class RegistrationUserCredentialsDAO implements IRegistrationUserCredenti
 		catch(Exception ex) {
 			throw new Exception(ex.getMessage());
 		}
-				
-	}
-	
-	
+		
+		finally {
+			dbConnector.closeConnection();
+		}			
+	}	
 }

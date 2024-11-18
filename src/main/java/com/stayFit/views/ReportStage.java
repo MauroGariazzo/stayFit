@@ -1,13 +1,33 @@
 package com.stayFit.views;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.stayFit.enums.NutrientsReportInterval;
+import com.stayFit.nutrientsReport.NutrientsDailyReportGetResponseDTO;
+import com.stayFit.nutrientsReport.NutrientsMonthlyReportGetResponseDTO;
+import com.stayFit.nutrientsReport.NutrientsReportController;
+import com.stayFit.nutrientsReport.NutrientsReportDAO;
+import com.stayFit.nutrientsReport.NutrientsReportGetResponseDTO;
+import com.stayFit.nutrientsReport.NutrientsReportGetUseCase;
+import com.stayFit.nutrientsReport.NutrientsWeeklyReportGetResponseDTO;
+import com.stayFit.repository.DBConnector;
+import com.stayFit.weightReport.WeightReportController;
+import com.stayFit.weightReport.WeightReportGetUseCase;
+import com.stayFit.weightReport.WeightReportDAO;
+import com.stayFit.weightReport.WeightReportGetResponseDTO;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.StackedBarChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
@@ -15,167 +35,250 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
 public class ReportStage {
+	private int user_fk;
+	private StackedBarChart<String, Number> nutrientChart;
+	private Label carbsLabel, proteinsLabel, fatsLabel;
+	private List<WeightReportGetResponseDTO> weightResponse = new ArrayList<>();
+	private Map<NutrientsReportInterval, List<NutrientsReportGetResponseDTO>> nutrients = new HashMap<>();
 
-    private StackedBarChart<String, Number> nutrientChart;
-    private Label carbsLabel, proteinsLabel, fatsLabel;
+	public ReportStage(int user_fk) {
+		this.user_fk = user_fk;
 
-    public StackPane createReportContent() {
-        // ** GRAFICO DEL PESO **
-        LineChart<Number, Number> weightChart = createWeightChart();
+		try {
+			WeightReportController weightReport = new WeightReportController(
+					new WeightReportGetUseCase(new WeightReportDAO(new DBConnector())));
+			this.weightResponse = weightReport.getWeightReport(user_fk);
 
-        // ** SEZIONE NUTRIENTI **
-        VBox nutrientReport = createNutrientReport();
+			NutrientsReportController nutrientsReport = new NutrientsReportController(
+					new NutrientsReportGetUseCase(new NutrientsReportDAO(new DBConnector())));
+			nutrients = nutrientsReport.get(user_fk);
+		} catch (Exception ex) {
+			showAlert(ex.getMessage(), Alert.AlertType.WARNING);
+		}
+	}
 
-        // ** LAYOUT GENERALE **
-        VBox content = new VBox(20);
-        content.setAlignment(Pos.TOP_CENTER);
-        content.setPadding(new Insets(20));
-        content.getChildren().addAll(weightChart, nutrientReport);
+	public StackPane createReportContent() {
+		// ** GRAFICO DEL PESO **
+		LineChart<String, Number> weightChart = createWeightChart();
 
-        // Contenitore principale
-        StackPane reportPane = new StackPane(content);
-        reportPane.setPrefHeight(800);
+		// ** SEZIONE NUTRIENTI **
+		VBox nutrientReport = createNutrientReport();
 
-        return reportPane;
-    }
+		// ** LAYOUT GENERALE **
+		VBox content = new VBox(20);
+		content.setAlignment(Pos.TOP_CENTER);
+		content.setPadding(new Insets(20));
+		content.getChildren().addAll(weightChart, nutrientReport);
 
-    private LineChart<Number, Number> createWeightChart() {
-        // Assi del grafico del peso
-        NumberAxis xAxis = new NumberAxis();
-        xAxis.setLabel("Tempo (giorni)");
+		// Contenitore principale
+		StackPane reportPane = new StackPane(content);
+		reportPane.setPrefHeight(800);
 
-        NumberAxis yAxis = new NumberAxis();
-        yAxis.setLabel("Peso (kg)");
+		return reportPane;
+	}
 
-        // Creazione del grafico del peso
-        LineChart<Number, Number> weightChart = new LineChart<>(xAxis, yAxis);
-        weightChart.setTitle("Andamento del Peso nel Tempo");
-        weightChart.setPrefHeight(300);
+	private LineChart<String, Number> createWeightChart() {
+		// Assi del grafico del peso
+		CategoryAxis xAxis = new CategoryAxis();
+		xAxis.setLabel("Tempo (date)");
 
-        // Serie di dati (esempio)
-        XYChart.Series<Number, Number> weightSeries = new XYChart.Series<>();
-        weightSeries.setName("Peso");
-        weightSeries.getData().add(new XYChart.Data<>(1, 70)); // Giorno 1, Peso 70kg
-        weightSeries.getData().add(new XYChart.Data<>(2, 69.5)); // Giorno 2, Peso 69.5kg
-        weightSeries.getData().add(new XYChart.Data<>(3, 69)); // Giorno 3, Peso 69kg
-        weightSeries.getData().add(new XYChart.Data<>(4, 68.5)); // Giorno 4, Peso 68.5kg
+		NumberAxis yAxis = new NumberAxis();
+		yAxis.setLabel("Peso (kg)");
 
-        weightChart.getData().add(weightSeries);
+		// Creazione del grafico del peso
+		LineChart<String, Number> weightChart = new LineChart<>(xAxis, yAxis);
+		weightChart.setTitle("Andamento del Peso nel Tempo");
+		weightChart.setPrefHeight(300);
 
-        return weightChart;
-    }
+		// Serie di dati
+		XYChart.Series<String, Number> weightSeries = new XYChart.Series<>();
+		weightSeries.setName("Peso");
 
-    private VBox createNutrientReport() {
-        // ** ComboBox per selezione periodo **
-        ComboBox<String> periodComboBox = new ComboBox<>();
-        periodComboBox.getItems().addAll("Giornaliero", "Settimanale", "Mensile");
-        periodComboBox.setValue("Giornaliero"); // Valore predefinito
+		// Iterazione sui dati di weightResponse
+		for (WeightReportGetResponseDTO entry : weightResponse) {
+			String dateLabel = entry.dateRegistration.toString(); // Usa la data come stringa
+			double weight = entry.weight;
 
-        periodComboBox.setOnAction(e -> {
-            String selectedPeriod = periodComboBox.getValue();
-            updateNutrientData(selectedPeriod);
-        });
+			// Aggiungi dati alla serie
+			weightSeries.getData().add(new XYChart.Data<>(dateLabel, weight));
+		}
 
-        // ** Etichette per riepilogo nutrienti **
-        carbsLabel = new Label("Carboidrati: -");
-        proteinsLabel = new Label("Proteine: -");
-        fatsLabel = new Label("Grassi: -");
+		// Aggiungi la serie di dati al grafico
+		weightChart.getData().add(weightSeries);
 
-        VBox summaryBox = new VBox(10, carbsLabel, proteinsLabel, fatsLabel);
-        summaryBox.setAlignment(Pos.CENTER_LEFT);
+		return weightChart;
+	}
 
-        // ** Grafico nutrienti **
-        CategoryAxis xAxis = new CategoryAxis();
-        xAxis.setLabel("Data");
+	private VBox createNutrientReport() {
+		// ** ComboBox per selezione periodo **
+		ComboBox<String> periodComboBox = new ComboBox<>();
+		periodComboBox.getItems().addAll("Giornaliero", "Settimanale", "Mensile");
+		periodComboBox.setValue("Giornaliero"); // Valore predefinito
 
-        NumberAxis yAxis = new NumberAxis();
-        yAxis.setLabel("Quantità (g)");
+		periodComboBox.setOnAction(e -> {
+			String selectedPeriod = periodComboBox.getValue();
+			updateNutrientData(selectedPeriod);
+		});
 
-        nutrientChart = new StackedBarChart<>(xAxis, yAxis);
-        nutrientChart.setTitle("Consumi Nutrienti");
-        nutrientChart.setPrefHeight(300);
+		// ** Etichette per riepilogo nutrienti **
+		carbsLabel = new Label("Carboidrati: -");
+		proteinsLabel = new Label("Proteine: -");
+		fatsLabel = new Label("Grassi: -");
 
-        // Contenitore per grafico e riepilogo
-        VBox nutrientReport = new VBox(20);
-        nutrientReport.setAlignment(Pos.TOP_CENTER);
-        nutrientReport.getChildren().addAll(periodComboBox, summaryBox, nutrientChart);
+		VBox summaryBox = new VBox(10, carbsLabel, proteinsLabel, fatsLabel);
+		summaryBox.setAlignment(Pos.CENTER_LEFT);
 
-        // Aggiorna inizialmente con dati giornalieri
-        updateNutrientData("Giornaliero");
+		// ** Grafico nutrienti **
+		CategoryAxis xAxis = new CategoryAxis();
+		xAxis.setLabel("Data");
 
-        return nutrientReport;
-    }
+		NumberAxis yAxis = new NumberAxis();
+		yAxis.setLabel("Quantità (g)");
 
-    private void updateNutrientData(String period) {
-        nutrientChart.getData().clear();
+		nutrientChart = new StackedBarChart<>(xAxis, yAxis);
+		nutrientChart.setTitle("Consumi Nutrienti");
+		nutrientChart.setPrefHeight(300);
 
-        XYChart.Series<String, Number> carbsSeries = new XYChart.Series<>();
-        carbsSeries.setName("Carboidrati");
+		// Contenitore per grafico e riepilogo
+		VBox nutrientReport = new VBox(20);
+		nutrientReport.setAlignment(Pos.TOP_CENTER);
+		nutrientReport.getChildren().addAll(periodComboBox, summaryBox, nutrientChart);
 
-        XYChart.Series<String, Number> proteinsSeries = new XYChart.Series<>();
-        proteinsSeries.setName("Proteine");
+		// Aggiorna inizialmente con dati giornalieri
+		updateNutrientData("Giornaliero");
 
-        XYChart.Series<String, Number> fatsSeries = new XYChart.Series<>();
-        fatsSeries.setName("Grassi");
+		return nutrientReport;
+	}
 
-        if ("Giornaliero".equals(period)) {
-            carbsSeries.getData().add(new XYChart.Data<>("1 Ott", 23));
-            proteinsSeries.getData().add(new XYChart.Data<>("1 Ott", 5));
-            fatsSeries.getData().add(new XYChart.Data<>("1 Ott", 1));
+	private void updateNutrientData(String period) {
+		nutrientChart.getData().clear();
 
-            carbsSeries.getData().add(new XYChart.Data<>("3 Ott", 24));
-            proteinsSeries.getData().add(new XYChart.Data<>("3 Ott", 6));
-            fatsSeries.getData().add(new XYChart.Data<>("3 Ott", 2));
+		// Creazione delle serie
+		XYChart.Series<String, Number> carbsSeries = new XYChart.Series<>();
+		carbsSeries.setName("Carboidrati");
 
-            updateSummary(23, 5, 1); // Media giornaliera
+		XYChart.Series<String, Number> proteinsSeries = new XYChart.Series<>();
+		proteinsSeries.setName("Proteine");
 
-        } else if ("Settimanale".equals(period)) {
-            carbsSeries.getData().add(new XYChart.Data<>("Settimana 1", 150));
-            proteinsSeries.getData().add(new XYChart.Data<>("Settimana 1", 35));
-            fatsSeries.getData().add(new XYChart.Data<>("Settimana 1", 10));
+		XYChart.Series<String, Number> fatsSeries = new XYChart.Series<>();
+		fatsSeries.setName("Grassi");
 
-            carbsSeries.getData().add(new XYChart.Data<>("Settimana 2", 160));
-            proteinsSeries.getData().add(new XYChart.Data<>("Settimana 2", 40));
-            fatsSeries.getData().add(new XYChart.Data<>("Settimana 2", 12));
+		// Aggiungi i dati alle serie
+		if ("Giornaliero".equals(period)) {
+			List<NutrientsReportGetResponseDTO> dailyNutrientsList = nutrients.get(NutrientsReportInterval.GIORNALIERO);
+			if (dailyNutrientsList != null) {
+				for (NutrientsReportGetResponseDTO nutrient : dailyNutrientsList) {
+					NutrientsDailyReportGetResponseDTO dailyNutrients = (NutrientsDailyReportGetResponseDTO) nutrient;
+					String date = LocalDate.of(dailyNutrients.year, dailyNutrients.month, dailyNutrients.day)
+							.toString();
+					
+					carbsSeries.getData().add(new XYChart.Data<>(date, nutrient.carbs));
+					proteinsSeries.getData().add(new XYChart.Data<>(date, nutrient.proteins));
+					fatsSeries.getData().add(new XYChart.Data<>(date, nutrient.fats));
+				}
+				// Calcola e aggiorna il riepilogo
+				updateSummary(calculateAverage(dailyNutrientsList, "carbs"),
+						calculateAverage(dailyNutrientsList, "proteins"), calculateAverage(dailyNutrientsList, "fats"));
+			}
+		}
 
-            updateSummary(155, 37, 11); // Media settimanale
+		else if ("Settimanale".equals(period)) {
+			List<NutrientsReportGetResponseDTO> weeklyNutrientsList = nutrients
+					.get(NutrientsReportInterval.SETTIMANALE);
+			
+			if (weeklyNutrientsList != null) {
+				for (NutrientsReportGetResponseDTO nutrient : weeklyNutrientsList) {
+					NutrientsWeeklyReportGetResponseDTO weeklyNutrients = (NutrientsWeeklyReportGetResponseDTO) nutrient;
+					String date = String.format("Settimana: %d - Anno: %d", weeklyNutrients.week, weeklyNutrients.year);
 
-        } else if ("Mensile".equals(period)) {
-            carbsSeries.getData().add(new XYChart.Data<>("Ottobre", 600));
-            proteinsSeries.getData().add(new XYChart.Data<>("Ottobre", 120));
-            fatsSeries.getData().add(new XYChart.Data<>("Ottobre", 30));
+					carbsSeries.getData().add(new XYChart.Data<>(date, nutrient.carbs));
+					proteinsSeries.getData().add(new XYChart.Data<>(date, nutrient.proteins));
+					fatsSeries.getData().add(new XYChart.Data<>(date, nutrient.fats));
+				}
+				updateSummary(calculateAverage(weeklyNutrientsList, "carbs"),
+	                    calculateAverage(weeklyNutrientsList, "proteins"),
+	                    calculateAverage(weeklyNutrientsList, "fats"));
+			}
+		}
 
-            carbsSeries.getData().add(new XYChart.Data<>("Novembre", 620));
-            proteinsSeries.getData().add(new XYChart.Data<>("Novembre", 125));
-            fatsSeries.getData().add(new XYChart.Data<>("Novembre", 32));
+		else if ("Mensile".equals(period)) {
+			List<NutrientsReportGetResponseDTO> monthlyNutrientsList = nutrients
+					.get(NutrientsReportInterval.MENSILE);
+			
+			if (monthlyNutrientsList != null) {
+				for (NutrientsReportGetResponseDTO nutrient : monthlyNutrientsList) {
+					NutrientsMonthlyReportGetResponseDTO monthlyNutrients = (NutrientsMonthlyReportGetResponseDTO) nutrient;
+					String date = String.format("Mese: %d - Anno: %d", monthlyNutrients.month, monthlyNutrients.year);
+					
+					carbsSeries.getData().add(new XYChart.Data<>(date, nutrient.carbs));
+					proteinsSeries.getData().add(new XYChart.Data<>(date, nutrient.proteins));
+					fatsSeries.getData().add(new XYChart.Data<>(date, nutrient.fats));
+				}
+				updateSummary(calculateAverage(monthlyNutrientsList, "carbs"),
+	                    calculateAverage(monthlyNutrientsList, "proteins"),
+	                    calculateAverage(monthlyNutrientsList, "fats"));
+			}			
+		}
 
-            updateSummary(610, 122, 31); // Media mensile
-        }
+		// Aggiungi le serie al grafico
+		nutrientChart.getData().addAll(fatsSeries, proteinsSeries, carbsSeries);
 
-        nutrientChart.getData().addAll(carbsSeries, proteinsSeries, fatsSeries);
+		// Assegna le classi CSS alle serie
+		setSeriesStyleClass(carbsSeries, "carbs-series");
+		setSeriesStyleClass(proteinsSeries, "proteins-series");
+		setSeriesStyleClass(fatsSeries, "fats-series");
 
-        // Imposta i colori delle serie
-        setSeriesColor(carbsSeries, Color.web("#4CAF50"));  // Verde per Carboidrati
-        setSeriesColor(proteinsSeries, Color.web("#2196F3")); // Blu per Proteine
-        setSeriesColor(fatsSeries, Color.web("#FF9800"));    // Arancione per Grassi
-    }
+		// Carica il file CSS se non è già stato caricato
+		if (nutrientChart.getScene() != null && nutrientChart.getScene().getStylesheets().isEmpty()) {
+			nutrientChart.getScene().getStylesheets().add(getClass().getResource("style.css").toExternalForm());
+		}
+	}
 
-    private void updateSummary(int avgCarbs, int avgProteins, int avgFats) {
-        carbsLabel.setText("Carboidrati: Ø " + avgCarbs + " g");
-        proteinsLabel.setText("Proteine: Ø " + avgProteins + " g");
-        fatsLabel.setText("Grassi: Ø " + avgFats + " g");
-    }
+	private void setSeriesStyleClass(XYChart.Series<String, Number> series, String styleClass) {
+		// Aggiungi un listener alla proprietà node della serie
+		series.nodeProperty().addListener((obs, oldNode, newNode) -> {
+			if (newNode != null) {
+				newNode.getStyleClass().add(styleClass);
+			}
+		});
+	}
 
-    private void setSeriesColor(XYChart.Series<String, Number> series, Color color) {
-        for (XYChart.Data<String, Number> data : series.getData()) {
-            data.getNode().setStyle("-fx-bar-fill: " + toRgbString(color) + ";");
-        }
-    }
+	private int calculateAverage(List<NutrientsReportGetResponseDTO> list, String nutrientType) {
+		double sum = 0;
+		int count = 0;
+		for (NutrientsReportGetResponseDTO dto : list) {
+			switch (nutrientType) {
+			case "carbs":
+				sum += dto.carbs;
+				break;
+			case "proteins":
+				sum += dto.proteins;
+				break;
+			case "fats":
+				sum += dto.fats;
+				break;
+			}
+			count++;
+		}
+		return count > 0 ? (int) (sum / count) : 0;
+	}
 
-    private String toRgbString(Color color) {
-        return "rgb(" + 
-            (int) (color.getRed() * 255) + "," + 
-            (int) (color.getGreen() * 255) + "," + 
-            (int) (color.getBlue() * 255) + ")";
-    }
+	private void updateSummary(int avgCarbs, int avgProteins, int avgFats) {
+		carbsLabel.setText("Carboidrati: Ø " + avgCarbs + " g");
+		proteinsLabel.setText("Proteine: Ø " + avgProteins + " g");
+		fatsLabel.setText("Grassi: Ø " + avgFats + " g");
+	}
+
+	private String toRgbString(Color color) {
+		return "rgb(" + (int) (color.getRed() * 255) + "," + (int) (color.getGreen() * 255) + ","
+				+ (int) (color.getBlue() * 255) + ")";
+	}
+
+	private void showAlert(String message, Alert.AlertType type) {
+		Alert alert = new Alert(type);
+		alert.setTitle("Attenzione");
+		alert.setHeaderText(null);
+		alert.setContentText(message);
+		alert.showAndWait();
+	}
 }

@@ -12,9 +12,9 @@ public class RegistrationUserCreateUseCase implements IRegistrationUserCreateUse
 		return this.registrationDAO.insert(regitrationRequestDTO);
 	}
 	
-	public void update(RequestCreateUserDTO regitrationRequestDTO)throws Exception{ 
+	/*public void update(RequestCreateUserDTO regitrationRequestDTO)throws Exception{ 
 		this.registrationDAO.update(regitrationRequestDTO);
-	}
+	}*/
 	
 	public double calculateBMI(double height, double weight)throws Exception {		 
 		height = (double)height/100; 

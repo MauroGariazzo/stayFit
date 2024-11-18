@@ -43,6 +43,10 @@ public class PortionDAO implements IPortionDAO {
 	    catch (Exception ex) {
 	        throw new Exception(ex.getMessage());
 	    }
+	    
+	    finally {
+			dbConnector.closeConnection();
+		}
 	}
 
 
@@ -74,6 +78,10 @@ public class PortionDAO implements IPortionDAO {
 			throw new Exception(ex.getMessage());
 		}
 		
+		finally {
+			dbConnector.closeConnection();
+		}
+		
 		return portions;
 	}
 	
@@ -86,6 +94,10 @@ public class PortionDAO implements IPortionDAO {
 		}
 		catch(Exception ex) {
 			throw new Exception(ex.getMessage());
+		}
+		
+		finally {
+			dbConnector.closeConnection();
 		}
 	}
 }

@@ -24,6 +24,8 @@ public class RegistrationUserDAO implements IRegistrationUserDAO{
 		String query = "INSERT INTO stayfit.stayfituser(stayFitUser_name, stayFitUser_surname, "
 				+ "height, weight, fitnessState, bmi, birthday, subscriptionDate, gender, goal, userCredentials_fk) "
 				+ "VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+		
+		System.out.println(registrationRequestDTO.userCredentials_fk);
 				
 		try(PreparedStatement pstmt = dbConnector.getConnection().prepareStatement(query, Statement.RETURN_GENERATED_KEYS)){
 			pstmt.setString(1, registrationRequestDTO.name);
@@ -55,16 +57,17 @@ public class RegistrationUserDAO implements IRegistrationUserDAO{
 	        }	
 		}
 		catch(SQLIntegrityConstraintViolationException ex) {
+			ex.printStackTrace();
 			throw new Exception("Username o mail già presenti nel nostro sistema");
 		}
 		
 		catch(Exception ex) {
 			ex.printStackTrace();
 			throw new Exception(ex.getMessage());			
-		}			
-	}
-	
-	public void update(RequestCreateUserDTO registrationRequestDTO) throws Exception{
+		}
 		
-	}
+		finally {
+			dbConnector.closeConnection();
+		}
+	}	
 }

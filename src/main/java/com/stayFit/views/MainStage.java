@@ -66,7 +66,7 @@ public class MainStage {
 
 		Label reportButton = createSidebarButtonWithImage("Report", "/icons/report.png");
 		reportButton.setOnMouseClicked(e -> {
-			StackPane content = new ReportStage().createReportContent();
+			StackPane content = new ReportStage(userDTO.id).createReportContent();
 			scrollPane.setContent(content);
 			});
 
