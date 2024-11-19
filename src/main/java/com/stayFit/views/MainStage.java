@@ -127,12 +127,15 @@ public class MainStage {
 		content.setPadding(new Insets(20));
 
 		Label title = new Label("Benvenuto su Stay Fit!");
-		Label message = new Label("Seleziona una categoria dallo sidebar per iniziare:\n"
-				+ "- 'La mia dieta': Carica gli alimenti della tua giornata.\n"
-				+ "- 'Report': Consulta le statistiche sull'andamento della tua dieta (peso e macronutrienti).\n"
-				+ "- 'I miei dati': Rivedi e modifica i tuoi dati personali, obiettivo, stato di fitness "
-				+ "e attività fisica. Modificando questi parametri, la tua dieta verrà rigenerata automaticamente.");
+		title.setStyle("-fx-font-size: 28px; -fx-font-family: 'Verdana'; -fx-text-fill: #2a9d8f; -fx-font-weight: bold;");
 
+		Label message = new Label("\tSeleziona una categoria dallo sidebar per iniziare:\n"
+		        + "\t          - 'La mia dieta': Carica gli alimenti della tua giornata.\n"
+		        + "\t          - 'Report': Consulta le statistiche sull'andamento della tua dieta (peso e macronutrienti).\n"
+		        + "\t          - 'I miei dati': Rivedi e modifica i tuoi dati personali, obiettivo, stato di fitness "
+		        + "e attività fisica. Modificando questi parametri, la tua dieta verrà rigenerata automaticamente.");
+		message.setStyle("-fx-font-size: 16px; -fx-font-family: 'Arial'; -fx-text-fill: #264653; -fx-line-spacing: 5px;");
+		message.setWrapText(true);
 
 		content.getChildren().addAll(title, message);
 		scrollPane.setContent(content); // Aggiorna il contenuto dello ScrollPane
