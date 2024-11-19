@@ -16,7 +16,6 @@
 	</properties>
 
 	<dependencies>
-		<!-- Le tue altre dipendenze -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
