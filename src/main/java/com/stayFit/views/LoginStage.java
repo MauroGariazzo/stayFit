@@ -85,12 +85,12 @@ public class LoginStage extends Application {
             if (passwordField.isVisible()) {
                 passwordField.setVisible(false);
                 passwordTextField.setVisible(true);
-                togglePasswordVisibilityButton.setGraphic(eyeOffImageView);
+                togglePasswordVisibilityButton.setGraphic(eyeImageView);
             } 
             else {
                 passwordField.setVisible(true);
                 passwordTextField.setVisible(false);
-                togglePasswordVisibilityButton.setGraphic(eyeImageView);
+                togglePasswordVisibilityButton.setGraphic(eyeOffImageView);
             }
         });
 
