@@ -52,7 +52,6 @@ public class RegistrationStage {
         newEmailField.setPromptText("Email");
         newEmailField.setMaxWidth(textFieldWidth - 10);
 
-        // Create password fields
         PasswordField newPasswordField = new PasswordField();
         newPasswordField.setPromptText("Password");
         newPasswordField.setPrefWidth(textFieldWidth);
@@ -62,18 +61,14 @@ public class RegistrationStage {
         newPasswordTextField.setVisible(false);
         newPasswordTextField.setPrefWidth(textFieldWidth);
 
-        // Bind the text properties so they stay in sync
         newPasswordTextField.textProperty().bindBidirectional(newPasswordField.textProperty());
 
-        // Create a StackPane to overlay the password fields
         StackPane passwordFieldsStack = new StackPane();
         passwordFieldsStack.getChildren().addAll(newPasswordField, newPasswordTextField);
 
-        // Create the toggle button
         togglePasswordVisibilityButton = new Button();
         togglePasswordVisibilityButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
 
-        // Load the eye icons
         InputStream eyeStream = getClass().getClassLoader().getResourceAsStream("icons/eye.png");
         InputStream eyeOffStream = getClass().getClassLoader().getResourceAsStream("icons/eye-off.png");
 
@@ -93,10 +88,8 @@ public class RegistrationStage {
         eyeOffImageView.setFitWidth(20);
         eyeOffImageView.setFitHeight(20);
 
-        // Set the initial icon for the toggle button
         togglePasswordVisibilityButton.setGraphic(eyeOffImageView);
 
-        // Set up the toggle logic
         togglePasswordVisibilityButton.setOnAction(event -> {
             if (newPasswordField.isVisible()) {
                 newPasswordField.setVisible(false);
@@ -109,7 +102,6 @@ public class RegistrationStage {
             }
         });
 
-        // Create a BorderPane to hold the password fields and toggle button
         BorderPane passwordContainer = new BorderPane();
         passwordContainer.setPrefWidth(textFieldWidth + 30);
         passwordContainer.setCenter(passwordFieldsStack);
@@ -117,7 +109,6 @@ public class RegistrationStage {
         BorderPane.setAlignment(togglePasswordVisibilityButton, Pos.CENTER_RIGHT);
         BorderPane.setMargin(togglePasswordVisibilityButton, new Insets(0, 5, 0, 0));
 
-        // Create the grid layout and add the fields
         GridPane gridPane = new GridPane();
         gridPane.setHgap(0);
         gridPane.setVgap(15);
@@ -128,7 +119,6 @@ public class RegistrationStage {
         gridPane.add(newEmailField, 0, 1);
         gridPane.add(passwordContainer, 0, 2);
 
-        // Registration button
         Button registerButton = new Button("Registrati");
         registerButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 16px;");
         registerButton.setOnAction(event -> {
@@ -147,7 +137,6 @@ public class RegistrationStage {
 
         VBox.setMargin(gridPane, new Insets(0, 0, 20, 0));
 
-        // Add all components to the layout
         registerLayout.getChildren().addAll(titleBox, gridPane, registerButton);
 
         Scene registerScene = new Scene(registerLayout, 450, 350);
