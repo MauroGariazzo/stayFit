@@ -57,8 +57,8 @@ public class OpenFoodFactsAPI {
 
         // Apertura connessione
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setConnectTimeout(10000); // Timeout di connessione di 10 secondi
-        connection.setReadTimeout(10000);    // Timeout di lettura di 10 secondi
+        connection.setConnectTimeout(20000); // Timeout di connessione di 10 secondi
+        connection.setReadTimeout(20000);    // Timeout di lettura di 10 secondi
         connection.setRequestProperty("User-Agent", "Mozilla/5.0");
 
         // Controllo del codice di risposta
@@ -151,9 +151,10 @@ public class OpenFoodFactsAPI {
         initializeJavaFX();
 
         String[] types = {
-            "pane", "pasta", "carne", "bevande", "acqua", "frutta", "verdura", "pesce", "birra", "vino"};
+            "pane", "pasta", "carne", "bevande", "acqua", "frutta", "verdura", "pesce", "birra", 
+            "vino", "olio", "mozzarella", "parmigiano", "formaggio", "spaghetti", 
+            "sugo", "pomodoro", "frutta secca", "carciofi", "funghi"};
         
-
         ProductDAO pd = new ProductDAO(new DBConnector());
         try {
             for(String type : types) {
