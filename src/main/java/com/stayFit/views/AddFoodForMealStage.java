@@ -269,7 +269,7 @@ public class AddFoodForMealStage {
 	        productDTO.category = name;
 	        List<ProductGetResponseDTO> products = controller.get(productDTO);
 	        
-	        if(products.size() > 0) {
+	        if(products.size() >= 30) {
 	            populateFromDB(products);
 	        }
 	        else {

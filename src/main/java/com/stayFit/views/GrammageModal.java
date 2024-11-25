@@ -17,7 +17,7 @@ public class GrammageModal extends ListCell<ProductGetResponseDTO> {
 	    modalStage.initModality(Modality.WINDOW_MODAL);
 	    modalStage.setTitle("Inserisci Grammatura");
 
-	    Label instructionLabel = new Label("Inserisci la grammatura del prodotto (in grammi):");
+	    Label instructionLabel = new Label("Inserisci la grammatura del prodotto:");
 	    TextField grammageField = new TextField();
 	    grammageField.setPromptText("Grammi");
 
