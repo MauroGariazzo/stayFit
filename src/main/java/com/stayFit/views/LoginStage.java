@@ -125,6 +125,7 @@ public class LoginStage extends Application {
         Scene loginScene = new Scene(loginLayout, 400, 400);
         primaryStage.setTitle("StayFit - Login");
         primaryStage.setScene(loginScene);
+        primaryStage.setResizable(false);
         primaryStage.show();
     }
 

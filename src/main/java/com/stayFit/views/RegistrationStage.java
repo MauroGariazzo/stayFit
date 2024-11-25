@@ -141,6 +141,7 @@ public class RegistrationStage {
 
         Scene registerScene = new Scene(registerLayout, 450, 350);
         registerStage.setScene(registerScene);
+        registerStage.setResizable(false);
         registerStage.showAndWait();
     }
 
