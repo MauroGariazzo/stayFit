@@ -32,13 +32,16 @@ public class DailyNutritionUpdateUseCase implements IDailyNutritionUpdateUseCase
 		}
 				
 		double TDEE = calculateTDEE(BMR, userInfoDTO.fitnessState);
-		System.out.println("il tuo tdee: " + TDEE);
+
 		return getDiet(TDEE, userInfoDTO);
 	}
 	
 	private DailyNutritionRequestUpdateDTO getDiet(double TDEE, UserInfoDTO userInfoDTO) {
 		// Calorie quotidiane TOTAL
 		double totalDailyCalories = calculateCalories(TDEE, userInfoDTO.goal);
+		if(totalDailyCalories < 1600) {
+			totalDailyCalories = 1600;
+		}
 		double totalDailyGramsProteins = calculateProteins(totalDailyCalories, userInfoDTO.goal); //125g proteine
 		double totalDailyGramsCarbs = calculateCarbs(totalDailyCalories, userInfoDTO.goal);
 		double totalDailyGramsFats = calculateFats(totalDailyCalories, userInfoDTO.goal);
@@ -88,15 +91,15 @@ public class DailyNutritionUpdateUseCase implements IDailyNutritionUpdateUseCase
 		double proteins = 0;
 		switch(goal) {
 			case Goal.PERDERE_PESO:
-				proteins = 0.22 * calories;
+				proteins = 0.3 * calories;
 				proteins /= 4;
 				break;
 			case Goal.MANTENERE_PESO:
-				proteins = 0.2 * calories;
+				proteins = 0.25 * calories;
 				proteins /= 4;
 				break;
 			case Goal.METTERE_MASSA_MUSCOLARE:
-				proteins = 0.23 * calories;
+				proteins = 0.24 * calories;
 				proteins /= 4;
 				break;
 		}
@@ -111,11 +114,11 @@ public class DailyNutritionUpdateUseCase implements IDailyNutritionUpdateUseCase
 				carbs /= 4;
 				break;
 			case Goal.MANTENERE_PESO:
-				carbs = 0.5 * calories;
+				carbs = 0.48 * calories;
 				carbs /= 4;
 				break;
 			case Goal.METTERE_MASSA_MUSCOLARE:
-				carbs = 0.52 * calories;
+				carbs = 0.51 * calories;
 				carbs /= 4;
 				break;
 		}
@@ -126,7 +129,7 @@ public class DailyNutritionUpdateUseCase implements IDailyNutritionUpdateUseCase
 		double fats = 0;
 		switch(goal) {
 			case Goal.PERDERE_PESO:
-				fats = 0.225 * calories;
+				fats = 0.25 * calories;
 				fats /= 9;
 				break;
 			case Goal.MANTENERE_PESO:
@@ -134,7 +137,7 @@ public class DailyNutritionUpdateUseCase implements IDailyNutritionUpdateUseCase
 				fats /= 9;
 				break;
 			case Goal.METTERE_MASSA_MUSCOLARE:
-				fats = 0.24 * calories;
+				fats = 0.25 * calories;
 				fats /= 9;
 				break;
 		}
