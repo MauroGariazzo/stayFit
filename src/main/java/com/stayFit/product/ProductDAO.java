@@ -49,12 +49,20 @@ public class ProductDAO implements IProductDAO {
 	}
 	
 	public List<Product> get(ProductGetRequestDTO productDTO)throws Exception {
-		String query = "SELECT * FROM stayFit.product WHERE product_name LIKE ? OR product_brand LIKE ? OR product_category LIKE ?";
+		String query = "SELECT * FROM stayFit.product " +
+	               "WHERE product_name LIKE ? " +
+	               "OR product_brand LIKE ? " +
+	               "OR product_category LIKE ? " +
+	               "ORDER BY " +
+	               "CASE WHEN product_category = 'Generic' THEN 0 ELSE 1 END, " +
+	               "product_name ASC " +
+	               "LIMIT 50";
+
 		List< Product> products = new ArrayList<>();	
 		try(PreparedStatement pstmt = dbConnector.getConnection().prepareStatement(query)){
-			pstmt.setString(1, productDTO.productName);
-			pstmt.setString(2, productDTO.brand);
-			pstmt.setString(3, productDTO.category);
+			pstmt.setString(1, "%" + productDTO.productName + "%");
+	        pstmt.setString(2, "%" + productDTO.brand + "%");
+	        pstmt.setString(3, "%" + productDTO.category+ "%");
 			ResultSet rs = pstmt.executeQuery();
 			
 			while(rs.next()) {

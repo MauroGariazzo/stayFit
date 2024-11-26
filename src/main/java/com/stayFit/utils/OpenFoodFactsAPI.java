@@ -57,8 +57,8 @@ public class OpenFoodFactsAPI {
 
         // Apertura connessione
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setConnectTimeout(20000); // Timeout di connessione di 10 secondi
-        connection.setReadTimeout(20000);    // Timeout di lettura di 10 secondi
+        connection.setConnectTimeout(30000); // Timeout di connessione di 10 secondi
+        connection.setReadTimeout(30000);    // Timeout di lettura di 10 secondi
         connection.setRequestProperty("User-Agent", "Mozilla/5.0");
 
         // Controllo del codice di risposta
@@ -150,11 +150,21 @@ public class OpenFoodFactsAPI {
         //Inizializzione JavaFX
         initializeJavaFX();
 
-        String[] types = {
+        /*String[] types = {
             "pane", "pasta", "carne", "bevande", "acqua", "frutta", "verdura", "pesce", "birra", 
             "vino", "olio", "mozzarella", "parmigiano", "formaggio", "spaghetti", 
-            "sugo", "pomodoro", "frutta secca", "carciofi", "funghi"};
+            "sugo", "pomodoro", "frutta secca", "carciofi", "funghi"};*/
         
+        /*String[] types = {"spaghetti", "fusilli", "penne", "mezze penne", "pipe", "pipette",
+        		"trofie", "strozzapreti", "tortiglioni", "bucatini"};*/
+        
+        String[] types = {
+
+        	    "spritz analcolico"
+        	};
+
+        
+        String category = "bevande";
         ProductDAO pd = new ProductDAO(new DBConnector());
         try {
             for(String type : types) {
@@ -166,7 +176,7 @@ public class OpenFoodFactsAPI {
                 	ProductCreateRequestDTO pc = new ProductCreateRequestDTO();
                 	pc.productName = product.productName;
                 	pc.brand = product.brand;
-                	pc.category = product.category;
+                	pc.category = category;
                 	pc.calories = product.calories;
                 	pc.carbs = product.carbs;
                 	pc.fats = product.fats;

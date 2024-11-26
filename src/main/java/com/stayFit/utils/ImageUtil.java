@@ -25,8 +25,22 @@ public class ImageUtil {
         return outputStream.toByteArray();
     }
     
-    public static Image byteArrayToImage(byte[] imageBytes) {
-        InputStream is = new ByteArrayInputStream(imageBytes);
-        return new Image(is);
+    public static Image byteArrayToImage(byte[] imageBytes)throws Exception {
+    	if (imageBytes == null) {
+            // Log dell'evento o messaggio di errore
+            System.err.println("Warning: imageBytes è null. Restituisce l'immagine di default.");
+            // Restituisce un'immagine di default
+            return new Image("icons/question.png");
+        }
+
+        try {
+            InputStream is = new ByteArrayInputStream(imageBytes);
+            return new Image(is);
+        }
+        catch (Exception e) {
+            // Log dell'eccezione e restituisce un'immagine di default
+            System.err.println("Errore durante la conversione di byte[] a Image: " + e.getMessage());
+            return new Image("icons/question.png");
+        }
     }
 }

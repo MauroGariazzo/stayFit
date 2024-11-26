@@ -267,13 +267,16 @@ public class AddFoodForMealStage {
 	        productDTO.productName = name;
 	        productDTO.brand = name;
 	        productDTO.category = name;
-	        List<ProductGetResponseDTO> products = controller.get(productDTO);
+	        List<ProductGetResponseDTO> products = controller.get(productDTO);	        
 	        
-	        if(products.size() >= 10) {
+	        System.out.println("Grandezza array: " + products.size());
+	        if(products.size() > 0) {
 	            populateFromDB(products);
 	        }
-	        else {
-	            populateFromAPI(name, controller, products);                 
+	        else {	        	
+	        	Platform.runLater(() -> {
+	                foodListView.setPlaceholder(new Label("Nessun prodotto trovato"));
+	            });            
 	        }
 	        
 	    } 
