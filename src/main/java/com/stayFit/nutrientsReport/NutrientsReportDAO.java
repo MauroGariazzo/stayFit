@@ -50,6 +50,10 @@ public class NutrientsReportDAO implements INutrientsReportDAO{
 		catch(Exception ex) {
 			throw new Exception(ex.getMessage());
 		}
+		
+		finally {
+			dbConnector.closeConnection();
+		}
 		return dailyReport;
 	}
 	
@@ -87,6 +91,9 @@ public class NutrientsReportDAO implements INutrientsReportDAO{
 		catch(Exception ex) {
 			throw new Exception(ex.getMessage());
 		}
+		finally {
+			dbConnector.closeConnection();
+		}
 		return weeklyReport;
 	}
 	
@@ -123,6 +130,9 @@ public class NutrientsReportDAO implements INutrientsReportDAO{
 		
 		catch(Exception ex) {
 			throw new Exception(ex.getMessage());
+		}
+		finally {
+			dbConnector.closeConnection();
 		}
 		return monthlyReport;
 	}

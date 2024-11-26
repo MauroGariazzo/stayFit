@@ -260,9 +260,7 @@ public class AddFoodForMealStage {
 	                 new ProductGetUseCase(new ProductDAO(new DBConnector())));
 	        
 	        ProductGetRequestDTO productDTO = new ProductGetRequestDTO(); 
-	        productDTO.productName = name;
-	        productDTO.brand = name;
-	        productDTO.category = name;
+	        productDTO.searchedProduct = name;
 	        List<ProductGetResponseDTO> products = controller.get(productDTO);	        
 	        	        
 	        if(products.size() > 0) {
@@ -291,7 +289,7 @@ public class AddFoodForMealStage {
     }
 
     
-    private void populateFromAPI(String name, ProductController controller, List<ProductGetResponseDTO> products) throws Exception {        
+    /*private void populateFromAPI(String name, ProductController controller, List<ProductGetResponseDTO> products) throws Exception {        
         for (ProductGetResponseDTO product : OpenFoodFactsAPI.search(name)) {
             ProductCreateRequestDTO pcrDTO = new ProductCreateRequestDTO();
             
@@ -316,7 +314,7 @@ public class AddFoodForMealStage {
         products = controller.get(productDTO);
         
         populateFromDB(products);
-    }
+    }*/
 
     
     private void createPortion() {
