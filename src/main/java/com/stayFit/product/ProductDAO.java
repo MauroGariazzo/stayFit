@@ -58,7 +58,7 @@ public class ProductDAO implements IProductDAO {
 	               "product_name ASC " +
 	               "LIMIT 50";
 
-		List< Product> products = new ArrayList<>();	
+		List<Product> products = new ArrayList<>();	
 		try(PreparedStatement pstmt = dbConnector.getConnection().prepareStatement(query)){
 			pstmt.setString(1, "%" + productDTO.productName + "%");
 	        pstmt.setString(2, "%" + productDTO.brand + "%");

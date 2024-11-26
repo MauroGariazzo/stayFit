@@ -112,7 +112,6 @@ public class AddFoodForMealStage {
 	    foodListView.setPrefHeight(300);
 	    VBox.setVgrow(foodListView, javafx.scene.layout.Priority.ALWAYS);
 
-	    // Configurazione del CellFactory per visualizzare le informazioni del prodotto
 	    foodListView.setCellFactory(createCellFactory());
 
 	    // Layout per il bottone di ricerca
@@ -125,7 +124,7 @@ public class AddFoodForMealStage {
 
 	    HBox buttonBox = new HBox(10, exitButton);
 	    buttonBox.setAlignment(Pos.CENTER);
-	    buttonBox.setPadding(new Insets(10, 0, 0, 0)); // Aggiungi padding per distanziarli dalla ListView
+	    buttonBox.setPadding(new Insets(10, 0, 0, 0));
 
 	    // Contenitore principale per il form
 	    VBox formBox = new VBox(10, title, foodName, searchButtonBox, foodListView, buttonBox);
@@ -227,8 +226,6 @@ public class AddFoodForMealStage {
 	                }
 
 	                
-
-	                // Metodo per mostrare un messaggio di errore
 	                /*private void showError(String message) {
 	                    Alert alert = new Alert(Alert.AlertType.ERROR);
 	                    alert.setTitle("Errore");
@@ -256,8 +253,7 @@ public class AddFoodForMealStage {
 	}
 
     
-	private void populateListView(String name) {
-	    // La pulizia della lista e l'impostazione del placeholder sono già eseguite sul thread principale
+	private void populateListView(String name) {	    
 	    try {
 	        ProductController controller = new ProductController(                     
 	                 new ProductCreateUseCase(new ProductDAO(new DBConnector())),
@@ -268,8 +264,7 @@ public class AddFoodForMealStage {
 	        productDTO.brand = name;
 	        productDTO.category = name;
 	        List<ProductGetResponseDTO> products = controller.get(productDTO);	        
-	        
-	        System.out.println("Grandezza array: " + products.size());
+	        	        
 	        if(products.size() > 0) {
 	            populateFromDB(products);
 	        }
@@ -310,7 +305,7 @@ public class AddFoodForMealStage {
             pcrDTO.sugars = product.sugars;
             pcrDTO.salt = product.salt;
             pcrDTO.proteins = product.proteins;
-            controller.create(pcrDTO); // Inserisci il prodotto nel db
+            controller.create(pcrDTO);
             products.add(product);            
         }
         
@@ -320,7 +315,6 @@ public class AddFoodForMealStage {
         productDTO.category = name;
         products = controller.get(productDTO);
         
-        // Aggiorna la UI sul thread principale
         populateFromDB(products);
     }
 
