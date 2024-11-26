@@ -54,16 +54,16 @@ public class DailyNutritionCreateUseCase implements IDailyNutritionCreateUseCase
 		double TDEE = 0;
 		switch (fitnessState) {
 		case FitnessState.SEDENTARIO:
-			TDEE = BMR * 1.2;
+			TDEE = BMR * 1;
 			break;
 		case FitnessState.POCO_ATTIVO:
-			TDEE = BMR * 1.375;
+			TDEE = BMR * 1.2;
 			break;
 		case FitnessState.MEDIAMENTE_ATTIVO:
-			TDEE = BMR * 1.55;
+			TDEE = BMR * 1.375;
 			break;
 		case FitnessState.MOLTO_ATTIVO:
-			TDEE = BMR * 1.725;
+			TDEE = BMR * 1.55;
 			break;
 		}
 		return TDEE;
@@ -71,10 +71,10 @@ public class DailyNutritionCreateUseCase implements IDailyNutritionCreateUseCase
 		
 	
 	private double calculateCalories(double TDEE, Goal goal) {		
-		double calories = TDEE;
+		double calories = TDEE;		
 		switch(goal) {
 			case PERDERE_PESO:				
-				calories -= 450;
+				calories -= 700;
 				break;
 			case MANTENERE_PESO:
 				calories = TDEE;

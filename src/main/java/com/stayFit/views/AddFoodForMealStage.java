@@ -186,8 +186,9 @@ public class AddFoodForMealStage {
 	                    addButton = new Button("+");
 	                    
 	                    addButton.setOnAction(event -> {
+	                    	ProductGetResponseDTO product = getItem();
 	                    	grammage = new GrammageModal().openGrammageModal();
-	                    	createPortion();
+	                    	createPortion(product);
 	                    });
 
 
@@ -317,9 +318,10 @@ public class AddFoodForMealStage {
     }*/
 
     
-    private void createPortion() {
+    private void createPortion(ProductGetResponseDTO selectedProduct) {
     	PortionCreateRequestDTO pcrDTO = new PortionCreateRequestDTO();
-    	ProductGetResponseDTO product = foodListView.getSelectionModel().selectedItemProperty().get();
+    	ProductGetResponseDTO product = selectedProduct;
+    	
     	pcrDTO.grams = grammage;    	    	
     	pcrDTO.product_fk = product.id;
     	pcrDTO.calories = product.calories;

@@ -330,13 +330,15 @@ public class DailyReportStage implements PortionListener {
 									PortionGetResponseDTO selectedItem = getItem();
 									try {
 										if (userConfirmation()) {
-											PortionController portionControllerDelete = new PortionController(
-													new PortionDeleteUseCase(new PortionDAO(new DBConnector())));
+											PortionController portionControllerDelete = new PortionController(new PortionDeleteUseCase(new PortionDAO(new DBConnector())));
 											portionControllerDelete.delete(selectedItem.id);
 											updateMealsSection();
-											populateListView(selectedItem.mealType);
+											populateListView(selectedItem.mealType);											
+										    updateDailyReport();
+											// Aggiorna calorie e macronutrienti
 										}
-									} catch (Exception ex) {
+									}
+									catch (Exception ex) {
 										showAlert(ex.getMessage(), Alert.AlertType.WARNING);
 									}
 								});
@@ -431,10 +433,8 @@ public class DailyReportStage implements PortionListener {
 	}
 
 	private VBox createCalendarOverview() {
-		// Get today's date
 		LocalDate today = LocalDate.now();
 
-		// Day of the week headers
 		String[] dayNames = { "Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom" };
 		GridPane calendarGrid = new GridPane();
 		calendarGrid.setHgap(10);
@@ -442,7 +442,6 @@ public class DailyReportStage implements PortionListener {
 		calendarGrid.setPadding(new Insets(10));
 		calendarGrid.setAlignment(Pos.CENTER);
 
-		// Add day headers
 		for (int i = 0; i < dayNames.length; i++) {
 			Label dayName = new Label(dayNames[i]);
 			dayName.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
@@ -481,16 +480,16 @@ public class DailyReportStage implements PortionListener {
 				        selectedDayButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
 				        selectedDate = currentDate;
 				        updateMealsSection(); // Chiama updateMealsSection() per aggiornare la sezione pasti
+				        dayButton.setStyle("-fx-background-color: #76ff03; -fx-text-fill: white; -fx-font-weight: bold;");
+					    selectedDayButton = dayButton;
+					    selectedDate = currentDate; // Aggiorna la data selezionata
+					    updateDailyReport();
+					    disableEnableAddButtons();
 				    }
-
-				    dayButton.setStyle("-fx-background-color: #76ff03; -fx-text-fill: white; -fx-font-weight: bold;");
-				    selectedDayButton = dayButton;
-				    selectedDate = currentDate; // Aggiorna la data selezionata
-				    updateDailyReport();
-				    disableEnableAddButtons();
 				});
 
-			} else {
+			} 
+			else {
 				dayButton.setDisable(true);
 				dayButton.setStyle("-fx-background-color: #dddddd; -fx-text-fill: #888888;");
 			}
