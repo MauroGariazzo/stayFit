@@ -158,13 +158,11 @@ public class OpenFoodFactsAPI {
         /*String[] types = {"spaghetti", "fusilli", "penne", "mezze penne", "pipe", "pipette",
         		"trofie", "strozzapreti", "tortiglioni", "bucatini"};*/
         
-        String[] types = {
-
-        	    "spritz analcolico"
+        String[] types = {"kinder"
         	};
 
         
-        String category = "bevande";
+        String category = "dolci e prodotti da forno";
         ProductDAO pd = new ProductDAO(new DBConnector());
         try {
             for(String type : types) {
@@ -194,7 +192,7 @@ public class OpenFoodFactsAPI {
             return;
         }
         finally {
-        	System.out.println("Spacciau");
+        	System.out.println("Finito");
         }
     }
 }

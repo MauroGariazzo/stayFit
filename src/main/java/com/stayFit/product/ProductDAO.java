@@ -51,13 +51,13 @@ public class ProductDAO implements IProductDAO {
 	public List<Product> get(ProductGetRequestDTO productDTO)throws Exception {
 		String query = "SELECT * FROM stayFit.product WHERE MATCH "
 				+ "(product_name, product_brand, product_category) "
-				+ "AGAINST (? IN NATURAL LANGUAGE MODE) "
+				+ "AGAINST (? IN BOOLEAN MODE) "
 				+ "ORDER BY CASE WHEN product_brand = ? "
 				+ "THEN 0 ELSE 1 END, product_name ASC;";
 
 		List<Product> products = new ArrayList<>();	
 		try(PreparedStatement pstmt = dbConnector.getConnection().prepareStatement(query)){
-			pstmt.setString(1, productDTO.searchedProduct);
+			pstmt.setString(1, "\"" + productDTO.searchedProduct + "\"");
 	        pstmt.setString(2, "Generico");
 			ResultSet rs = pstmt.executeQuery();
 			
