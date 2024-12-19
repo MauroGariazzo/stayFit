@@ -171,7 +171,7 @@ public class DailyReportStage implements PortionListener {
 				portionController.create(portionsCreateRequestDTO, id);
 			} 
 			catch (Exception ex) {
-				System.out.println(ex.getMessage());
+				//System.out.println(ex.getMessage());
 			}
 		}
 		updateMealsSection();
@@ -196,6 +196,7 @@ public class DailyReportStage implements PortionListener {
 	    HBox mainBody = new HBox(20);
 	    mainBody.setAlignment(Pos.TOP_LEFT);
 	    mainBody.getChildren().addAll(mealsBox, tableView);
+	    
 	    mainBody.widthProperty().addListener((obs, oldVal, newVal) -> {
 	        double halfWidth = newVal.doubleValue() / 2 - 10;
 	        mealsBox.setPrefWidth(halfWidth);
@@ -222,7 +223,7 @@ public class DailyReportStage implements PortionListener {
 	        PortionGetResponseDTO portionDinner = loadPortions(MealType.CENA);
 	        PortionGetResponseDTO portionSnacks = loadPortions(MealType.SPUNTINO);
 	        
-	        System.out.println(portionBreakFast.proteins);
+	        //System.out.println(portionBreakFast.proteins);
 
 	        newMealsBox.getChildren().addAll(
 	            createMealItem("COLAZIONE",
@@ -393,8 +394,8 @@ public class DailyReportStage implements PortionListener {
 		HBox navigationBar = new HBox(20, previousButton, monthLabel, nextButton);
 		navigationBar.setAlignment(Pos.CENTER);
 		navigationBar.setPadding(new Insets(10, 0, 10, 0));
-		navigationBar.setAlignment(Pos.CENTER);
-		updateMonthLabel(); // Set the label for the current month
+		//navigationBar.setAlignment(Pos.CENTER);
+		updateMonthLabel();
 
 		return navigationBar;
 	}
@@ -689,6 +690,7 @@ public class DailyReportStage implements PortionListener {
 		addButton.setStyle(
 				"-fx-font-size: 16px; -fx-text-fill: #FFFFFF; -fx-background-color: #007bff; -fx-background-radius: 20;");
 		addButton.setMinSize(30, 30);
+		
 		addButton.setOnMouseClicked(event -> {
 			AddFoodForMealStage addFoodForMeal = new AddFoodForMealStage(mealName, this, this::updateDailyReport);
 			Node foodForm = addFoodForMeal.searchFoodForm();

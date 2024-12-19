@@ -52,8 +52,7 @@ public class MainStage {
 		Label foodsButton = createSidebarButtonWithImage("La mia dieta", "/icons/food.png");
 		foodsButton.setOnMouseClicked(e -> {
 			
-			StackPane content = new DailyReportStage(userDTO, userDTO.subscriptionDate)
-					.getDailyReportView();
+			StackPane content = new DailyReportStage(userDTO, userDTO.subscriptionDate).getDailyReportView();
 
 			scrollPane.setContent(content);
 		});

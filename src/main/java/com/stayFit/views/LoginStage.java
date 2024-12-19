@@ -33,7 +33,7 @@ public class LoginStage extends Application {
     @Override
     public void start(Stage primaryStage) {
         VBox loginLayout = new VBox(20);
-        loginLayout.setPadding(new Insets(20));
+        //loginLayout.setPadding(new Insets(20));
         loginLayout.setAlignment(Pos.CENTER);
 
         Label titleLabel = new Label("Login");
@@ -46,11 +46,11 @@ public class LoginStage extends Application {
 
         passwordField = new PasswordField();
         passwordField.setPromptText("Password");
-        passwordField.setMaxWidth(250);
+        passwordField.setMaxWidth(200);
 
         passwordTextField = new TextField();
         passwordTextField.setPromptText("Password");
-        passwordTextField.setMaxWidth(250);
+        passwordTextField.setMaxWidth(200);
         passwordTextField.setVisible(false);
 
         passwordTextField.textProperty().bindBidirectional(passwordField.textProperty());
@@ -58,16 +58,17 @@ public class LoginStage extends Application {
         togglePasswordVisibilityButton = new Button();
         togglePasswordVisibilityButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
 
-        InputStream eyeStream = getClass().getClassLoader().getResourceAsStream("icons/eye.png");
+        /*InputStream eyeStream = getClass().getClassLoader().getResourceAsStream("icons/eye.png");
         InputStream eyeOffStream = getClass().getClassLoader().getResourceAsStream("icons/eye-off.png");
 
         if (eyeStream == null || eyeOffStream == null) {
             showAlert("Icone non trovate", Alert.AlertType.ERROR);
             return;
-        }
+        }*/
 
-        Image eyeImage = new Image(eyeStream);
-        Image eyeOffImage = new Image(eyeOffStream);
+        Image eyeImage = new Image(getClass().getResource("/icons/eye.png").toExternalForm());
+        Image eyeOffImage = new Image(getClass().getResource("/icons/eye-off.png").toExternalForm());
+
 
         ImageView eyeImageView = new ImageView(eyeImage);
         eyeImageView.setFitWidth(20);

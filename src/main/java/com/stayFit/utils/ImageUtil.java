@@ -27,9 +27,7 @@ public class ImageUtil {
     
     public static Image byteArrayToImage(byte[] imageBytes)throws Exception {
     	if (imageBytes == null) {
-            // Log dell'evento o messaggio di errore
-            System.err.println("Warning: imageBytes è null. Restituisce l'immagine di default.");
-            // Restituisce un'immagine di default
+            System.err.println("imageBytes null");
             return new Image("icons/question.png");
         }
 
@@ -38,7 +36,6 @@ public class ImageUtil {
             return new Image(is);
         }
         catch (Exception e) {
-            // Log dell'eccezione e restituisce un'immagine di default
             System.err.println("Errore durante la conversione di byte[] a Image: " + e.getMessage());
             return new Image("icons/question.png");
         }

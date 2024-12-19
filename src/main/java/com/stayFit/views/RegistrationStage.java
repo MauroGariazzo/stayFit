@@ -128,7 +128,8 @@ public class RegistrationStage {
                 PersonalDataStage personalDataForm = new PersonalDataStage(response.id);
                 registerStage.close();
                 personalDataForm.show();
-            } catch (Exception ex) {
+            } 
+            catch (Exception ex) {
                 System.out.println(ex.getMessage());
                 ex.printStackTrace();
                 showAlert(ex.getMessage(), Alert.AlertType.WARNING);
